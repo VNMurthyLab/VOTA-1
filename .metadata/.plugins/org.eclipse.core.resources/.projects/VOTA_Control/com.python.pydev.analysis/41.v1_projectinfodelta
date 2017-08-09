@@ -1,0 +1,12 @@
+INSTUPHW_ni_daq.old.ni_analog_output
+D:\Hao\VOTA\VOTA_Control\HW_ni_daq\old\ni_analog_output.py
+INFOS:&&1|1|2|0&&2|3|2|1&&3|4|2|5&&3|6|2|5&&2|7|2|1&&3|8|2|9
+NI_AnalogOutput=1
+debug=6
+task=8
+HW_ni_daq.old.ni_analog_output=2
+NI_AnalogOutput.__init__=5
+output_terminal=4
+NI_AnalogOutput.create_task=9
+__init__=3
+create_task=7
