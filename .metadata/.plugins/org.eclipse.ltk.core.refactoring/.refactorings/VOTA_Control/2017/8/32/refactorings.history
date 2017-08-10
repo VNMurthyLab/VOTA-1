@@ -1,4 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename resource &apos;VOTA_Control/VOTAScopeHW/daq_ai/sine_plot.ui&apos; to &apos;ai_plot.ui&apos;" description="Rename resource &apos;sine_plot.ui&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="VOTAScopeHW/daq_ai/sine_plot.ui" name="ai_plot.ui" stamp="1502314891765" updateReferences="true"/>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;VOTA_Control/VOTAScopeHW/daq_ai/sine_plot.ui&apos; to &apos;ai_plot.ui&apos;" description="Rename resource &apos;sine_plot.ui&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="VOTAScopeHW/daq_ai/sine_plot.ui" name="ai_plot.ui" stamp="1502314891765" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;VOTA_Control/VOTAScopeHW/func_gen&apos; to &apos;odor_gen&apos;" description="Rename resource &apos;func_gen&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="VOTAScopeHW/func_gen" name="odor_gen" stamp="1502394330703" updateReferences="true"/>
 </session>

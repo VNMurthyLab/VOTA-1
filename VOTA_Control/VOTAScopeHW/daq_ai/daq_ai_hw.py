@@ -54,8 +54,8 @@ class DAQaiHW(HardwareComponent):
             del self.read_data
             del self.get_size
             
-        except NameError:
-            print('Task does not exist')
+        except AttributeError:
+            pass
         
 if __name__ == '__main__':
     ai=DAQaiHW()

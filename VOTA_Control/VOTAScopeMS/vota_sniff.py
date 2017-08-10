@@ -68,7 +68,7 @@ class VOTASniffMeasure(Measurement):
         self.ui.plot_groupBox.layout().addWidget(self.graph_layout)
 
         # Create PlotItem object (a set of axes)  
-        self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="Breathing",pen='r')
+        self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
         self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Odor Output Target")
@@ -136,11 +136,11 @@ class VOTASniffMeasure(Measurement):
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
         try:
-            odor_on_chances=[0.1,0.05,0.005,0.03]
-            odor_off_chances=[0.8,0.9,0.1,0.5]
-            odor_value=[0,0,0,0]
-            odor_disp_value=[0,0,0,0]
-            odor_on=[False,False,False,False]
+            odor_on_chances=[1,0,0.1,0]
+            odor_off_chances=[0,0.1,0.4,0.1]
+            odor_value=[3500,0,0,0]
+            odor_disp_value=[3500,0,0,0]
+            odor_on=[True,False,False,False]
             odor_on_init=[True,True,True,True]
             i = 0
             j = 0
@@ -163,14 +163,22 @@ class VOTASniffMeasure(Measurement):
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
                 
-                
+                clean_air=3500;
 
-                
-                for l in range(0,4):
+#                 if ((i%100)<10):
+#                     if ((i%100)==0):
+#                         odor_value[2]=3500
+#                     else:
+#                         odor_value[2]=int(i*3500/10000)
+#                         odor_disp_value[2]=
+#                 else:
+#                     odor_value[2]=0
+#                         
+                for l in range(1,4):
                     dice=random()
                     if odor_on[l]:
                         if odor_on_init[l]:
-                            odor_value[l]=randint(0,100)
+                            odor_value[l]=randint(1800,3500)
                             odor_disp_value[l]=odor_value[l]
                             odor_on_init[l]=False
                         if dice<odor_off_chances[l]:
@@ -181,16 +189,21 @@ class VOTASniffMeasure(Measurement):
                     else:
                         if dice<odor_on_chances[l]:
                             if odor_on_init[l]:
-                                odor_value[l]=70
+                                odor_value[l]=3500
                                 odor_disp_value[l]=0
                             odor_on[l]=True
-                            
+                    
+                    clean_air=clean_air-odor_disp_value[1];
+                    
+                    odor_value[0]=clean_air;
+                    odor_disp_value[0]=clean_air;        
+                
                 self.buffer[i:(i+step_size),num_of_chan:(num_of_chan+4)] = odor_disp_value
                 self.arduino_sol.settings.odor1.update_value(odor_value[0])
-                self.arduino_sol.settings.odor2.update_value(odor_value[1])
-                self.arduino_sol.settings.odor3.update_value(odor_value[2])
+                self.arduino_sol.settings.odor1.update_value(odor_value[1])
+                self.arduino_sol.settings.odor2.update_value(odor_value[2])
                 self.arduino_sol.settings.odor4.update_value(odor_value[3])
-                
+                self.arduino_sol.write(odor_value)
                 
                 if self.settings['save_h5']:
                     # if we are saving data to disk, copy data to H5 dataset
@@ -213,6 +226,7 @@ class VOTASniffMeasure(Measurement):
                     # The interrupt button is a polite request to the 
                     # Measurement thread. We must periodically check for
                     # an interrupt request
+                    self.arduino_sol.write([3500,0,0,0])
                     self.daq_ai.stop()
                     break
 

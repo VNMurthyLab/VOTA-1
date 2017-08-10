@@ -13,18 +13,19 @@ class ArduinoSolDev(object):
     classdocs
     '''
 
-    def __init__(self, port='COM3',baud_rate=25000):
+    def __init__(self, port='COM3',baud_rate=250000):
         '''
         Constructor
         '''
         self.port=port
         self.baud_rate=baud_rate
-        #self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
+        self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
+        #self.open()
         
     def write(self,sol_level=[0,0,0,0]):
         output=bytes('s','utf-8');
         for i in range(len(sol_level)):
-            output=b''.join([output,sol_level[i].to_bytes(2,'big')])
+            output=output+sol_level[i].to_bytes(2,'big')
         self.ser.write(output)
         
         
@@ -36,6 +37,7 @@ class ArduinoSolDev(object):
     
     def open(self):
         self.ser.open()
+        time.sleep(2)
         
     def close(self):
         self.ser.close()
@@ -49,7 +51,7 @@ if __name__ == '__main__':
     sol=ArduinoSolDev()
     time.sleep(2)
     a=time.time()
-    for i in range(3):
+    for i in range(1000):
         sol.write()
     b=time.time()
     print(sol.read(),i)

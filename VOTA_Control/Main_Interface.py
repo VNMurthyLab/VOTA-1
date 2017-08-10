@@ -17,6 +17,7 @@ class VOTAScopeApp(BaseMicroscopeApp):
 
 
         #Add hardware components
+        print("Create Hardware objects")
         from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
         self.add_hardware(DAQaiHW(self))
         

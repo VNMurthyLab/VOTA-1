@@ -4,14 +4,15 @@ D:\Hao\VOTA\.metadata\.plugins\org.eclipse.core.resources\.projects\VOTA_Control
 VOTAScopeHW.arduino_sol.__init__|1502310347009000000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\__init__.py
 VOTAScopeMS.__init__|1502310347009000000|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
 VOTAScopeHW.daq_ai.daq_ai_dev|1502340976748075000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_dev.py
-Main_Interface|1502365584963624000|D:\Hao\VOTA\VOTA_Control\Main_Interface.py
-VOTAScopeHW.daq_ai.daq_ai_hw|1502335467543520000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_hw.py
+Main_Interface|1502394137420486000|D:\Hao\VOTA\VOTA_Control\Main_Interface.py
+VOTAScopeHW.odor_gen.__init__|1502310347009000000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\__init__.py
+VOTAScopeHW.daq_ai.daq_ai_hw|1502394102413521000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_hw.py
 VOTAScopeHW.daq_ai.test_pydaqmx|1502316711208064000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\test_pydaqmx.py
 VOTAScopeHW.__init__|1502310347009676000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\__init__.py
-VOTAScopeHW.arduino_sol.arduino_sol_dev|1502360549213083000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_dev.py
+VOTAScopeHW.arduino_sol.arduino_sol_dev|1502391538906746000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_dev.py
 VOTAScopeHW.daq_ai.__init__|1502310347009000000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\__init__.py
-VOTAScopeMS.vota_sniff|1502365776530449000|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py
-VOTAScopeHW.arduino_sol.arduino_sol_hw|1502361284724667000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_hw.py
+VOTAScopeMS.vota_sniff|1502393290491084000|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py
+VOTAScopeHW.arduino_sol.arduino_sol_hw|1502394111056218000|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_hw.py
 -- END DISKCACHE
 -- START DICTIONARY
 21
@@ -50,7 +51,7 @@ tas|1|task!51@
 vot|2|VOTAScopeApp!41@VOTASniffMeasure!57@
 -- END TREE
 -- START TREE 2
-40
+41
 T|1|T!8&59@
 __d|1|__del__!9&10@
 __i|2|__init__!10&50@__init__!9&10@
@@ -74,7 +75,7 @@ get|2|get_size!10&50@get_size!12&27@
 gra|1|graph_layout!8&59@
 h5_|1|h5_group!16&59@
 h5f|1|h5file!16&59@
-hel|2|hello!9&10@hello!13&35@
+hel|1|hello!9&10@
 k|2|k!8&59@k!16&59@
 nam|5|name!19&27@name!20&59@name!18&35@name!19&19@name!21&43@
 num|1|num_of_chan!17&51@
@@ -84,11 +85,12 @@ plo|7|plot4!8&59@plot_line2!8&59@plot2!8&59@plot_line3!8&59@plot3!8&59@plot_line
 por|1|port!15&11@
 rea|4|read_data!12&27@read!9&10@read_data!10&50@read_current_data!10&50@
 run|1|run!20&58@
+ser|1|ser!15&11@
 set|6|setup!19&18@setup!18&34@setup!21&42@setup!20&58@setup!19&26@setup_figure!20&58@
 sta|2|start!18&34@start!19&26@
 sto|2|stop!18&34@stop!19&26@
 ui|1|ui!14&59@
 ui_|1|ui_filename!14&59@
 upd|1|update_display!20&58@
-wri|1|write!9&10@
+wri|2|write!13&35@write!9&10@
 -- END TREE

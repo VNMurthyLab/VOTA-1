@@ -17,7 +17,7 @@ class ArduinoSolHW(HardwareComponent):
     
     name='arduino_sol'
 
-    def setup(self,port='COM3',baud_rate=25000):
+    def setup(self,port='COM3',baud_rate=250000):
         '''
         add settings for analog input event
         '''
@@ -33,7 +33,8 @@ class ArduinoSolHW(HardwareComponent):
     def connect(self):
         self._dev=ArduinoSolDev(self.settings.port.value(),
                           self.settings.baud_rate.value())
-        self.hello=self._dev.hello
+        self.write=self._dev.write
+    
         
     def start(self):
         self._dev.open()
@@ -45,10 +46,10 @@ class ArduinoSolHW(HardwareComponent):
         try:
             self._dev.close()
             del self._dev
-            del self.hello
+            del self.write
             
-        except NameError:
-            print('Task does not exist')
+        except AttributeError:
+            pass
         
 if __name__ == '__main__':
     ai=DAQaiHW()
