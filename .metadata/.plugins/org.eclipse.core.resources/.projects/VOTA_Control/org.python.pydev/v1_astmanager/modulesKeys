@@ -7,5 +7,6 @@ VOTAScopeHW.arduino_sol.arduino_sol_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\ardu
 VOTAScopeHW.daq_ai.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\__init__.py
 VOTAScopeHW.daq_ai.daq_ai_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_dev.py
 VOTAScopeHW.daq_ai.daq_ai_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_hw.py
-VOTAScopeHW.daq_ai.daq_ai_plot|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_plot.py
 VOTAScopeHW.daq_ai.test_pydaqmx|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\test_pydaqmx.py
+VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
+VOTAScopeMS.vota_sniff|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py

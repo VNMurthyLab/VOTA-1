@@ -34,10 +34,14 @@ class VOTAScopeApp(BaseMicroscopeApp):
         # show ui
         self.ui.show()
         self.ui.activateWindow()
+        
+        #connect to main interface
 
 
 if __name__ == '__main__':
     import sys
     
     app = VOTAScopeApp(sys.argv)
+    app.hardware['daq_ai'].settings.connected.update_value(True)
+    app.hardware['arduino_sol'].settings.connected.update_value(True)
     sys.exit(app.exec_())
