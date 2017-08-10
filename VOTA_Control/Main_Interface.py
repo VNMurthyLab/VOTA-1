@@ -1,26 +1,27 @@
 from ScopeFoundry import BaseMicroscopeApp
 
-class FancyMicroscopeApp(BaseMicroscopeApp):
+class VOTAScopeApp(BaseMicroscopeApp):
 
     # this is the name of the microscope that ScopeFoundry uses 
     # when storing data
-    name = 'fancy_microscope'
+    name = 'vota_scope'
     
     # You must define a setup function that adds all the 
     #capablities of the microscope and sets default settings
+    
     def setup(self):
         
         #Add App wide settings
-        
-        #Add hardware components
-        print("Adding Hardware Components")
-        from ScopeFoundryHW.virtual_function_gen.vfunc_gen_hw import VirtualFunctionGenHW
-        self.add_hardware(VirtualFunctionGenHW(self))
+        initial_data_save_dir = 'D:\Hao\Data'
+        self.settings.get_lq('save_dir').update_value(initial_data_save_dir)
 
+        from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
+        self.add_hardware(DAQaiHW(self))
+        
         #Add measurement components
         print("Create Measurement objects")
-        from ScopeFoundryHW.virtual_function_gen.sine_wave_measure import SineWavePlotMeasure
-        self.add_measurement(SineWavePlotMeasure(self))
+        from VOTAScopeHW.daq_ai.daq_ai_plot import DAQaiPlotMeasure
+        self.add_measurement(DAQaiPlotMeasure(self))
         # Connect to custom gui
         
         # load side panel UI
@@ -33,5 +34,5 @@ class FancyMicroscopeApp(BaseMicroscopeApp):
 if __name__ == '__main__':
     import sys
     
-    app = FancyMicroscopeApp(sys.argv)
+    app = VOTAScopeApp(sys.argv)
     sys.exit(app.exec_())

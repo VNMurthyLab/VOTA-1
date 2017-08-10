@@ -1,0 +1,19 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+
+class DAQaiHW(HardwareComponent):
+    '''
+    classdocs
+    '''
+
+
+    def __init__(self, argv):
+        '''
+        Constructor
+        '''
+        self.__init__(self.argv)

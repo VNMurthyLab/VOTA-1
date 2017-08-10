@@ -1,0 +1,47 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+from PyDAQmx import *
+import numpy as np
+import time
+
+class DAQaiHW(HardwareComponent):
+    '''
+    Hardware Component Class for receiving AI input for breathing, licking etc
+    '''
+    
+    name='daq_ai'
+
+    def setup(self,channels='Dev2/ai0',rate=1000.0):
+        '''
+        add settings for analog input event
+        '''
+        self.settings.New(name='channels',initial=channels,dtype=str,ro=false)
+        self.settings.New(name='rate',initial=rate,dtype=float,ro=false)
+                
+    def connect(self):
+        self._task=Task()
+        self._data=np.zeros((1000,),dtype=float)
+        read=int32()
+        channels=self.settings.get_lq('channels').value()
+        rate=self.settings.get_lq('rate').value()
+        self._task.CreateAIVoltageChan(channels,'',DAQmx_Val_Cfg_Default,-10.0,10.0,DAQmx_Val_Volts,None)
+        self._task.CfgSampClkTiming("",rate,DAQmx_Val_Rising,DAQmx_Val_FiniteSamps,1000)
+        self._task.StartTask()
+        self._task.ReadAnalogF64(1000,10.0,DAQmx_Val_GroupByChannel,self._data,1000,byref(read),None)
+        
+    def disconnect(self):
+        del self._task
+        
+        
+        
+if __name__ == '__main__':
+    ai=DAQaiHW()
+    ai.connect()
+    print(ai._data)
+    time.sleep(1)
+    ai.disconnect()

@@ -1,0 +1,42 @@
+from numpy import zeros
+from PyDAQmx import *
+from queue import Queue
+
+"""This example is a PyDAQmx version of the ContAcq_IntClk.c example
+It illustrates the use of callback functions
+
+This example demonstrates how to acquire a continuous amount of
+data using the DAQ device's internal clock. It incrementally stores the data
+in a Python list.
+"""
+
+class CallbackTask(Task):
+    def __init__(self,channels='Dev2/ai14',rate=1000.0,buffer_size=1000,queue_size=1000):
+        
+        
+        Task.__init__(self)
+        self.buffer_size=buffer_size
+        self.data = zeros(self.buffer_size)
+        self.buffer = Queue(queue_size)
+        self.CreateAIVoltageChan(channels,"",DAQmx_Val_RSE,-10.0,10.0,DAQmx_Val_Volts,None)
+        self.CfgSampClkTiming("",rate,DAQmx_Val_Rising,DAQmx_Val_ContSamps,buffer_size)
+        self.AutoRegisterEveryNSamplesEvent(DAQmx_Val_Acquired_Into_Buffer,1000,0)
+        self.AutoRegisterDoneEvent(0)
+    def EveryNCallback(self):
+        read = int32()
+        self.ReadAnalogF64(self.buffer_size,10.0,DAQmx_Val_GroupByScanNumber,self.data,buffer_size,byref(read),None)
+        self.buffer.put(self.data)
+        print(self.data[0])
+        return 0 # The function should return an integer
+    def DoneCallback(self, status):
+        print("Status",status.value)
+        return 0 # The function should return an integer
+
+if __name__ == '__main__':
+    task=CallbackTask()
+    task.StartTask()
+    
+    input('Acquiring samples continuously. Press Enter to interrupt\n')
+    
+    task.StopTask()
+    task.ClearTask()

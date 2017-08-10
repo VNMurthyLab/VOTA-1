@@ -1,0 +1,12 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+import numpy as np
+import PyDAQmx as mx
+
+class DAQaiDev(object):
+    
+    

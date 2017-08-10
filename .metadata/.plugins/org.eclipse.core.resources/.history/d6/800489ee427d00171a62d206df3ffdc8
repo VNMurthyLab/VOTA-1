@@ -1,0 +1,22 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+import PyDAQmx as mx
+
+class DAQaiHW(HardwareComponent):
+    '''
+    Hardware Component Class for receiving AI input for breathing, licking etc
+    '''
+    
+    name='daq_ai'
+
+    def setup(self):
+        '''
+        add settings for analog input event
+        '''
+        self.settings.New(name='channels',initial='Dev2/ai13:15',dtype=,ro=false)
+    

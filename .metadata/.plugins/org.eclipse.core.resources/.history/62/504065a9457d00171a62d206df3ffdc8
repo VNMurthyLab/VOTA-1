@@ -1,0 +1,23 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+import numpy as np
+import PyDAQmx as mx
+
+class DAQaiDev(object):
+    
+    def __init__(self,channels='dev2/ai1:2',rate=1000.0):
+        self.channels=channels
+        self.rate=1000
+        
+    def set_channels(self,channels):
+        self._channels=channels
+        
+        
+    def create_task(self):
+        
+    
+    

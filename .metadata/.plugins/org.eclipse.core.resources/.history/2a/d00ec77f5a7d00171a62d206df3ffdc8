@@ -1,0 +1,61 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+from PyDAQmx import *
+import numpy as np
+import time
+import queue
+
+class DAQaiDev(object):
+    '''
+    Hardware Component Class for receiving AI input for breathing, licking etc
+    '''
+    
+    name='daq_ai'
+
+    def __init__(self,channels='Dev2/ai14',num_of_chan=1,rate=1000.0,buffer_size=10,max_queue_size=1000):
+        '''
+        add settings for analog input event
+        '''
+        self.settings.New(name='channels',initial=channels,dtype=str,ro=False)
+        self.settings.New(name='num_of_chan',initial=num_of_chan,dtype=int,ro=False)
+        self.settings.New(name='rate',initial=rate,dtype=float,ro=False)
+        self.settings.New(name='data', initial=0, dtype=float, ro=True)
+        self.settings.New(name='buffer_size', initial=buffer_size, dtype=int, ro=False)
+        self.settings.New(name='max_queue_size', initial=max_queue_size, dtype=int, ro=False)
+        
+                
+    def connect(self):
+        self.dev=
+        
+        self.settings.data.connect_to_hardware(
+            read_func  = self.read_data
+            )
+        
+    def disconnect(self):
+        try:
+            self._task.ClearTask()
+            del self._task
+            del self._buffer
+            
+        except NameError:
+            print('Task does not exist')
+            
+    
+    def write_to_buffer(self,value):
+        self._buffer.put(value)
+    
+    def read_data(self):
+        if not (self._buffer.empty()):
+            return self._buffer.get()
+        
+if __name__ == '__main__':
+    ai=DAQaiHW()
+    ai.connect()
+    print(ai._data)
+    time.sleep(1)
+    ai.disconnect()

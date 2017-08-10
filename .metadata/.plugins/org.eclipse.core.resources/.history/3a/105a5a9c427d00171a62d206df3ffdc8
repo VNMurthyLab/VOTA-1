@@ -1,0 +1,15 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+import PyDAQmx as mx
+
+class DAQaiHW(HardwareComponent):
+    '''
+    Hardware Component Class for receiving AI input for breathing, licking etc
+    '''
+
+
