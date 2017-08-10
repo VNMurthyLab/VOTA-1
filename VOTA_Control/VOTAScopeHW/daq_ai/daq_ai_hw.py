@@ -17,7 +17,7 @@ class DAQaiHW(HardwareComponent):
     
     name='daq_ai'
 
-    def setup(self,channels='Dev2/ai14',num_of_chan=1,rate=1000.0,buffer_size=10,queue_size=1000):
+    def setup(self,channels='Dev2/ai14,Dev2/ai0,Dev2/ai1',num_of_chan=3,rate=1000.0,buffer_size=10,queue_size=1000):
         '''
         add settings for analog input event
         '''
@@ -51,6 +51,8 @@ class DAQaiHW(HardwareComponent):
             self._dev.StopTask()
             self._dev.ClearTask()
             del self._dev
+            del self.read_data
+            del self.get_size
             
         except NameError:
             print('Task does not exist')

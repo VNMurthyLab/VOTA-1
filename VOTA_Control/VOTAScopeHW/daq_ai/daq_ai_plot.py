@@ -39,7 +39,7 @@ class DAQaiPlotMeasure(Measurement):
         self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
-        self.buffer = np.zeros(10000, dtype=float)
+        #self.buffer = np.zeros(10000, dtype=float)
         
         # Define how often to update display during a run
         self.display_update_period = 0.1 
@@ -65,10 +65,19 @@ class DAQaiPlotMeasure(Measurement):
         self.ui.plot_groupBox.layout().addWidget(self.graph_layout)
 
         # Create PlotItem object (a set of axes)  
-        self.plot = self.graph_layout.addPlot(title="DAQ AI Readout Plot")
+        self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="Breathing",pen='r')
+        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID")
+        self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
         # Create PlotDataItem object ( a scatter plot on the axes )
-        self.optimize_plot_line = self.plot.plot([0])        
-
+        self.plot_line1 = self.plot1.plot([0])    
+        self.plot_line2 = self.plot2.plot([0])
+        self.plot_line3 = self.plot3.plot([0])     
+        
+        self.plot_line1.setPen('r')
+        self.plot_line2.setPen('g')
+        self.plot_line3.setPen('b')
+        self.T=np.linspace(0,10,10000)
+        self.k=0
     
     def update_display(self):
         """
@@ -76,8 +85,10 @@ class DAQaiPlotMeasure(Measurement):
         This function runs repeatedly and automatically during the measurement run.
         its update frequency is defined by self.display_update_period
         """
-        self.optimize_plot_line.setData(self.buffer) 
-        print(self.buffer_h5.size)
+        self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
+        self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
+        self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
+        #print(self.buffer_h5.size)
     
     def run(self):
         """
@@ -85,6 +96,7 @@ class DAQaiPlotMeasure(Measurement):
         It should not update the graphical interface directly, and should only
         focus on data acquisition.
         """
+        self.buffer = np.zeros((10000,self.daq_ai.settings.num_of_chan.value()), dtype=float)
         # first, create a data file
         if self.settings['save_h5']:
             # if enabled will create an HDF5 file with the plotted data
@@ -100,31 +112,33 @@ class DAQaiPlotMeasure(Measurement):
             self.buffer_h5 = self.h5_group.create_dataset(name  = 'buffer', 
                                                           shape = self.buffer.shape,
                                                           dtype = self.buffer.dtype,
-                                                          maxshape=(None,))
+                                                          maxshape=(None,self.buffer.shape[1]))
         
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
         try:
             i = 0
             j = 0
+            self.k=0
             step_size=self.daq_ai.settings.buffer_size.value()
             self.daq_ai.start()
             
             # Will run forever until interrupt is called.
             while not self.interrupt_measurement_called:
-                i %= len(self.buffer)
-                if j>(self.buffer_h5.size-step_size):
-                    self.buffer_h5.resize((self.buffer_h5.size+len(self.buffer),))
+                i %= self.buffer.shape[0]
+                if j>(self.buffer_h5.shape[0]-step_size):
+                    self.buffer_h5.resize((self.buffer_h5.shape[0]+self.buffer.shape[0],self.buffer.shape[1]))
+                    self.k +=10
                 
                 # Set progress bar percentage complete
-                self.settings['progress'] = i * 100./len(self.buffer)
+                self.settings['progress'] = i * 100./self.buffer.shape[0]
                 
                 # Fills the buffer with sine wave readings from func_gen Hardware
-                self.buffer[i:(i+step_size)] = self.daq_ai.read_data()
+                self.buffer[i:(i+step_size),:] = self.daq_ai.read_data()
                 
                 if self.settings['save_h5']:
                     # if we are saving data to disk, copy data to H5 dataset
-                    self.buffer_h5[j:(j+step_size)] = self.buffer[i:(i+step_size)]
+                    self.buffer_h5[j:(j+step_size),:] = self.buffer[i:(i+step_size),:]
                     # flush H5
                     self.h5file.flush()
                 
@@ -134,6 +148,7 @@ class DAQaiPlotMeasure(Measurement):
                 
                 i += step_size
                 j += step_size
+                
                 
                 if self.interrupt_measurement_called:
                     # Listen for interrupt_measurement_called flag.

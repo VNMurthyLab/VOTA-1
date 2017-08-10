@@ -1,4 +1,4 @@
-from numpy import zeros
+from numpy import zeros,reshape
 from PyDAQmx import *
 from queue import Queue
 import time
@@ -28,7 +28,7 @@ class DAQaiDev(Task):
     def EveryNCallback(self):
         read = int32()
         self.ReadAnalogF64(self.buffer_size,10.0,DAQmx_Val_GroupByScanNumber,self.data,self.buffer_size*self.num_of_chan,byref(read),None)
-        self.buffer.put(self.data)
+        self.buffer.put(reshape(self.data,(self.buffer_size,self.num_of_chan)))
         #print(self.data)
         return 0 # The function should return an integer
     
