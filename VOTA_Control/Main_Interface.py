@@ -15,13 +15,18 @@ class VOTAScopeApp(BaseMicroscopeApp):
         initial_data_save_dir = 'D:\Hao\Data'
         self.settings.get_lq('save_dir').update_value(initial_data_save_dir)
 
+
+        #Add hardware components
         from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
         self.add_hardware(DAQaiHW(self))
         
+        from VOTAScopeHW.arduino_sol.arduino_sol_hw import ArduinoSolHW
+        self.add_hardware(ArduinoSolHW(self))
+        
         #Add measurement components
         print("Create Measurement objects")
-        from VOTAScopeHW.daq_ai.daq_ai_plot import DAQaiPlotMeasure
-        self.add_measurement(DAQaiPlotMeasure(self))
+        from VOTAScopeMS.vota_sniff import VOTASniffMeasure
+        self.add_measurement(VOTASniffMeasure(self))
         # Connect to custom gui
         
         # load side panel UI

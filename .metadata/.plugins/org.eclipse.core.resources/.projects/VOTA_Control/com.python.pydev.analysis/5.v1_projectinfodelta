@@ -1,1 +1,15 @@
-DELSTRVOTAScopeHW.arduino_sol.arduino_sol_dev
+INSTUPVOTAScopeHW.arduino_sol.arduino_sol_hw
+D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_hw.py
+INFOS:&&1|1|2|0&&3|3|2|1&&2|4|2|1&&2|5|2|1&&3|6|2|7&&3|8|2|7&&2|9|2|1&&2|10|2|1&&2|11|2|1&&3|12|2|0
+disconnect=11
+start=9
+ai=12
+VOTAScopeHW.arduino_sol.arduino_sol_hw=2
+stop=10
+ArduinoSolHW=1
+name=3
+setup=4
+_dev=6
+hello=8
+connect=5
+ArduinoSolHW.connect=7
