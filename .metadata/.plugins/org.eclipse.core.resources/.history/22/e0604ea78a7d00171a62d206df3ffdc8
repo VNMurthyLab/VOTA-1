@@ -1,0 +1,46 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+import numpy as np
+import serial
+import time
+
+class ArduinoSolDev(object):
+    '''
+    classdocs
+    '''
+
+    def __init__(self, port='COM3',baud_rate=115200):
+        '''
+        Constructor
+        '''
+        self.port=port
+        self.baud_rate=baud_rate
+        
+        self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
+        
+    def write_ser(self,val):
+        self.ser.write(val.encode('utf-8'))
+        
+    def read(self):
+        return self.ser.readline()
+    
+    def open(self):
+        self.ser.open()
+        
+    def close(self):
+        self.ser.close()
+    
+    def __del__(self):
+        self.close()
+        del self.ser
+        
+
+if __name__ == '__main__':
+    sol=ArduinoSolDev()
+    time.sleep(2)
+    for i in range(100):
+        sol.write_ser('a')
+        print(sol.read())
