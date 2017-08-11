@@ -20,9 +20,10 @@ class VOTAScopeApp(BaseMicroscopeApp):
         print("Create Hardware objects")
         from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
         self.add_hardware(DAQaiHW(self))
-        
         from VOTAScopeHW.arduino_sol.arduino_sol_hw import ArduinoSolHW
         self.add_hardware(ArduinoSolHW(self))
+        from VOTAScopeHW.odor_gen.odor_gen_hw import OdorGenHW
+        self.add_hardware(OdorGenHW(self))
         
         #Add measurement components
         print("Create Measurement objects")
@@ -45,4 +46,5 @@ if __name__ == '__main__':
     app = VOTAScopeApp(sys.argv)
     app.hardware['daq_ai'].settings.connected.update_value(True)
     app.hardware['arduino_sol'].settings.connected.update_value(True)
+    app.hardware['odor_gen'].settings.connected.update_value(True)
     sys.exit(app.exec_())

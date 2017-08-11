@@ -9,5 +9,7 @@ VOTAScopeHW.daq_ai.daq_ai_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai
 VOTAScopeHW.daq_ai.daq_ai_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_hw.py
 VOTAScopeHW.daq_ai.test_pydaqmx|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\test_pydaqmx.py
 VOTAScopeHW.odor_gen.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\__init__.py
+VOTAScopeHW.odor_gen.odor_gen_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_dev.py
+VOTAScopeHW.odor_gen.odor_gen_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_hw.py
 VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
 VOTAScopeMS.vota_sniff|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py

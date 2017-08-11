@@ -19,7 +19,7 @@ class ArduinoSolDev(object):
         '''
         self.port=port
         self.baud_rate=baud_rate
-        self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
+        #self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
         #self.open()
         
     def write(self,sol_level=[0,0,0,0]):

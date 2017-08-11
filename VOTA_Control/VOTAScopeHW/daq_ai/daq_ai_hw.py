@@ -17,7 +17,7 @@ class DAQaiHW(HardwareComponent):
     
     name='daq_ai'
 
-    def setup(self,channels='Dev2/ai14,Dev2/ai0,Dev2/ai1',num_of_chan=3,rate=1000.0,buffer_size=10,queue_size=1000):
+    def setup(self,channels='Dev2/ai14,Dev2/ai0,Dev2/ai1',num_of_chan=3,rate=1000.0,buffer_size=1,queue_size=1000):
         '''
         add settings for analog input event
         '''
@@ -25,7 +25,7 @@ class DAQaiHW(HardwareComponent):
         self.settings.New(name='num_of_chan',initial=num_of_chan,dtype=int,ro=False)
         self.settings.New(name='rate',initial=rate,dtype=float,ro=False)
         self.settings.New(name='data', initial=0, dtype=float, ro=True)
-        self.settings.New(name='buffer_size', initial=buffer_size, dtype=int, ro=False)
+        self.settings.New(name='buffer_size', initial=buffer_size, dtype=int, ro=True)
         self.settings.New(name='queue_size', initial=queue_size, dtype=int, ro=False)
 
         

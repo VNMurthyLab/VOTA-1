@@ -1,0 +1,59 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+from .odor_gen_dev import OdorGenDev
+from PyDAQmx import *
+import numpy as np
+import time
+
+class OdorGenHW(HardwareComponent):
+    '''
+    Hardware Component Class for receiving AI input for breathing, licking etc
+    '''
+    
+    name='odor_gen'
+
+    def setup(self,num_of_sol=4,buffer_size=1,queue_size=100000):
+        '''
+        add settings for analog input event
+        '''
+        self.settings.New(name='num_of_sol',initial=num_of_sol,dtype=int,ro=False)
+        self.settings.New(name='buffer_size',initial=buffer_size,dtype=int,ro=True)
+        self.settings.New(name='queue_size',initial=queue_size,dtype=int,ro=False)
+        self.settings.New(name='vmin',initial=queue_size,dtype=int,ro=False)
+        self.settings.New(name='vmax',initial=queue_size,dtype=int,ro=False)
+
+        
+                
+    def connect(self):
+        self._dev=OdorGenDev(self.settings.num_of_sol.value(),
+                          self.settings.buffer_size.value(),
+                          self.settings.queue_size.value())
+        
+        self.flush=self._dev.flush()
+    
+    
+    def run(self):
+        self.
+    
+        
+    def disconnect(self):
+        try:
+            self._dev.close()
+            del self._dev
+            del self._write
+            del self.read
+            
+        except AttributeError:
+            pass
+        
+if __name__ == '__main__':
+    ai=DAQaiHW()
+    ai.connect()
+    print(ai._data)
+    time.sleep(1)
+    ai.disconnect()

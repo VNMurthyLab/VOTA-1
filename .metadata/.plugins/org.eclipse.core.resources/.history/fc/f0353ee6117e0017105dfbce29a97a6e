@@ -1,0 +1,79 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+import numpy as np
+from scipy import signal,pi
+from queue import Queue
+import matplotlib.pyplot as plt
+
+class OdorGenDev(object):
+    '''
+    classdocs
+    '''
+
+    def __init__(self,num_of_sol=4,buffer_size=1,queue_size=100000):
+        '''
+        Constructor
+        '''
+        self.num_of_sol=num_of_sol
+        self.buffer_size=buffer_size
+        self.step=buffer_size
+        self.sec=1000/buffer_size;
+        self.queue_size=queue_size
+        self.max_tick=queue_size
+        
+        self.tick=0
+        
+        self.data=np.zeros((queue_size,num_of_sol),dtype=float)
+        self.t=np.linspace(0,queue_size/self.dt,queue_size)
+        self.buffer=Queue(queue_size)
+        
+    def gen_sqr_wave(self,freq=1,dc=0.5):
+        return signal.square(2*freq*pi*self.t,dc)
+    
+    def gen_ladder_wave(self,freq=1,vmin=0,vmax=1):
+        output=np.zeros((self.queue_size,))
+        num_steps=self.queue_size/self.sec/freq
+        seg_len=self.freq*self.sec
+        
+        for i in range(num_steps):
+            output[(i:i+1)*seg_len]
+            
+        
+    def set_sol(self,wave,sol=0):
+        self.data[:,sol]=wave
+    
+    def read(self):
+        return self.buffer.get()
+    
+    def write(self,val):
+        self.buffer.put(val)
+    
+    def load_all(self):
+        self.flush_buffer()
+        for i in range(self.queue_size):
+            self.buffer.put(self.data[i,:].astype(int).squeeze().tolist())
+    
+    def is_empty(self):
+        return self.buffer.qsize()==0
+    
+    def flush_data(self):
+        self.data[:]=0
+        
+    def flush_buffer(self):
+            while not self.is_empty():
+                self.buffer.get_nowait()
+
+    def flush(self):
+        self.flush_data()
+        self.flush_buffer()
+
+if __name__ == '__main__':
+    odor_gen=OdorGenDev(queue_size=10)
+    odor_gen.set_sol(odor_gen.gen_sqr_wave(0.1),0)
+    plt.plot(odor_gen.t, odor_gen.data[:,0])
+    odor_gen.load_all()
+    for i in range(10):
+        print(odor_gen.read())

@@ -23,10 +23,13 @@ class ArduinoSolHW(HardwareComponent):
         '''
         self.settings.New(name='port',initial=port,dtype=str,ro=False)
         self.settings.New(name='baud_rate',initial=baud_rate,dtype=int,ro=False)
-        self.settings.New(name='odor1',initial=0,dtype=int,ro=False,vmin=0,vmax=3500)
-        self.settings.New(name='odor2',initial=0,dtype=int,ro=False,vmin=0,vmax=3500)
-        self.settings.New(name='odor3',initial=0,dtype=int,ro=False,vmin=0,vmax=3500)
-        self.settings.New(name='odor4',initial=0,dtype=int,ro=False,vmin=0,vmax=3500)
+        
+        self.sols=[]
+        self.sols.append(self.settings.New(name='clean_cair',initial=0,dtype=int,ro=False,vmin=0,vmax=3500))
+        self.sols.append(self.settings.New(name='odor1',initial=0,dtype=int,ro=False,vmin=0,vmax=3500))
+        self.sols.append(self.settings.New(name='odor2',initial=0,dtype=int,ro=False,vmin=0,vmax=3500))
+        self.sols.append(self.settings.New(name='odor3',initial=0,dtype=int,ro=False,vmin=0,vmax=3500))
+
 
         
                 
@@ -44,7 +47,7 @@ class ArduinoSolHW(HardwareComponent):
         
     def disconnect(self):
         try:
-            self._dev.close()
+            self.stop()
             del self._dev
             del self.write
             
