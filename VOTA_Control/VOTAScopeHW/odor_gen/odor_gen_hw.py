@@ -21,11 +21,23 @@ class OdorGenHW(HardwareComponent):
         '''
         add settings for analog input event
         '''
+        self.settings.New(name='pulse_duration_ms',initial=24,dtype=int,ro=False,vmin=24,vmax=1000)
+        self.settings.New(name='preload_ms',initial=9,dtype=int,ro=True,vmin=2,vmax=15)
         self.settings.New(name='num_of_sol',initial=num_of_sol,dtype=int,ro=False)
         self.settings.New(name='buffer_size',initial=buffer_size,dtype=int,ro=True)
+        
         self.settings.New(name='queue_size',initial=queue_size,dtype=int,ro=False)
-        self.settings.New(name='vmin',initial=1400,dtype=int,ro=False)
-        self.settings.New(name='vmax',initial=3500,dtype=int,ro=False)
+        self.settings.New(name='vmin',initial=0,dtype=int,ro=False)
+        self.settings.New(name='vmax',initial=100,dtype=int,ro=False)
+        
+        self.settings.New(name='selected_sol',initial=2,dtype=int,ro=False)
+        self.settings.New(name='on_chance',initial=0,dtype=float,ro=False)
+        self.odor_coeffs=[]
+        self.odor_coeffs.append(self.settings.New(name='clean_coeff',initial=1,dtype=float,ro=False))
+        self.odor_coeffs.append(self.settings.New(name='odor1_coeff',initial=1,dtype=float,ro=False))
+        self.odor_coeffs.append(self.settings.New(name='odor2_coeff',initial=1,dtype=float,ro=False))
+        self.odor_coeffs.append(self.settings.New(name='odor3_coeff',initial=1,dtype=float,ro=False))
+        
 
         
                 
@@ -40,13 +52,30 @@ class OdorGenHW(HardwareComponent):
     def buffer_empty(self):
         return self._dev.is_empty()
     
-    def run(self):
-        output=self._dev.gen_sqr_ladder(vmin=self.settings.vmin.value(),vmax=self.settings.vmax.value(),dc=0.5)
-        clean=self.settings.vmax.value()-output
+    def make_ladder(self):
+        sol=self.settings.selected_sol.value()
+        duty_cycle=self.settings.pulse_duration_ms.value()/1000.0
+        preload=self.settings.preload_ms.value()
+        output=self._dev.gen_sqr_ladder(vmin=self.settings.vmin.value(),vmax=self.settings.vmax.value(),dc=duty_cycle,pre=preload)*self.odor_coeffs[sol].value()
+        clean=100-output
+        #self._dev.set_sol(clean,0)
+        self._dev.set_sol(clean,clean,0)
+        self._dev.set_sol(output.astype(int),output.astype(int),sol)
+        self._dev.load_all()
+        
+    def make_ladder_clean(self):
+        output=self._dev.gen_sqr_ladder(vmin=0,vmax=1600,dc=0.5)
+        clean=1600-output
+        #self._dev.set_sol(clean,0)
         self._dev.set_sol(clean,0)
-        self._dev.set_sol(output,1)
         self._dev.load_all()
     
+    def random(self):
+        sol=self.settings.selected_sol.value()
+        on_chance=self.settings.on_chance.value()
+        on_pulse_ms=self.settings.pulse_duration_ms.value()
+        pre_pulse_ms=self.settings.preload_ms.value()
+        self._dev.random(sol,on_chance,on_pulse_ms,pre_pulse_ms)
         
     def disconnect(self):
         try:

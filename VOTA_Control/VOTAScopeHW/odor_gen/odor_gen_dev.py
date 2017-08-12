@@ -7,6 +7,7 @@ import numpy as np
 from scipy import signal,pi
 from queue import Queue
 import matplotlib.pyplot as plt
+from random import random,randint
 
 class OdorGenDev(object):
     '''
@@ -27,26 +28,45 @@ class OdorGenDev(object):
         self.tick=0
         
         self.data=np.zeros((queue_size,num_of_sol),dtype=float)
+        self.disp_data=np.zeros((queue_size,num_of_sol),dtype=float)
         self.t=np.linspace(0,queue_size/self.sec,queue_size)
         self.buffer=Queue(queue_size)
         
     def gen_sqr_wave(self,freq=1,dc=0.5):
         return (signal.square(2*freq*pi*self.t,dc)+1)/2
     
-    def gen_ladder_wave(self,vmin=0,vmax=1):
+    def gen_ladder_wave(self,vmin=0,vmax=1,pre=9):
         sec=int(self.sec);
         seglen=int(self.queue_size/sec)
         output=np.zeros((sec,seglen))
         vals=np.linspace(vmin,vmax,seglen)
+        
         vals=vals.reshape((1,seglen))
         output[:]=vals
+        output[1:pre,:]=100
         return output.transpose().reshape((self.queue_size,))
     
-    def gen_sqr_ladder(self,vmin=1400,vmax=3500,dc=0.5):
-        return np.multiply(self.gen_ladder_wave(vmin,vmax),self.gen_sqr_wave(1,dc))
+    def gen_sqr_ladder(self,vmin=0,vmax=100,dc=0.5,pre=9):
+        return np.multiply(self.gen_ladder_wave(vmin,vmax,pre),self.gen_sqr_wave(1,dc))
         
-    def set_sol(self,wave,sol=0):
+    def set_sol(self,wave,disp_wave,sol=0):
         self.data[:,sol]=wave
+        self.disp_data[:,sol]=disp_wave
+        
+    def random(self,sol,on_chance,on_pulse_ms,pre_pulse_ms,level_rand_func=randint):
+        dice=random()
+        if dice<on_chance:
+            sol_level=level_rand_func(0,100)
+            data=np.zeros((on_pulse_ms,self.num_of_sol),dtype=float)
+            disp_data=np.zeros((on_pulse_ms,self.num_of_sol),dtype=float)
+            data[:,sol]=sol_level
+            disp_data[:,sol]=sol_level
+            data[1:pre_pulse_ms,sol]=100
+            data[:,0]=100-sol_level
+            disp_data[:,0]=100-sol_level
+            for i in range(on_pulse_ms):
+                self.buffer.put([data[i,:].astype(int).squeeze().tolist(),disp_data[i,:].astype(int).squeeze().tolist()])
+                
     
     def read(self):
         return self.buffer.get()
@@ -57,7 +77,7 @@ class OdorGenDev(object):
     def load_all(self):
         self.flush_buffer()
         for i in range(self.queue_size):
-            self.buffer.put(self.data[i,:].astype(int).squeeze().tolist())
+            self.buffer.put([self.data[i,:].astype(int).squeeze().tolist(),self.disp_data[i,:].astype(int).squeeze().tolist()])
     
     def is_empty(self):
         return self.buffer.qsize()==0

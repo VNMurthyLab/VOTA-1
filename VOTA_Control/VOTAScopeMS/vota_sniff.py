@@ -37,7 +37,8 @@ class VOTASniffMeasure(Measurement):
         # Measurement Specific Settings
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
-        self.settings.New('save_h5', dtype=bool, initial=True)
+        self.settings.New('save_h5', dtype=bool, initial=False)
+        self.settings.New('tdelay', dtype=int, initial=80,ro=True)
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -70,7 +71,7 @@ class VOTASniffMeasure(Measurement):
 
         # Create PlotItem object (a set of axes)  
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
-        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID")
+        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID vs target")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
         self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Odor Output Target")
         # Create PlotDataItem object ( a scatter plot on the axes )
@@ -82,7 +83,7 @@ class VOTASniffMeasure(Measurement):
         self.odor_plot_line2 = self.plot4.plot([1])  
         self.odor_plot_line3 = self.plot4.plot([2])  
         self.odor_plot_line4 = self.plot4.plot([3])  
-        
+        self.target_odor_line = self.plot2.plot([1])
         
         self.plot_line1.setPen('r')
         self.plot_line2.setPen('g')
@@ -101,12 +102,13 @@ class VOTASniffMeasure(Measurement):
         its update frequency is defined by self.display_update_period
         """
         self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
-        self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
+        self.plot_line2.setData(self.k+self.T,self.buffer[:,0]) 
         self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
         self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,3]) 
         self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,4]) 
         self.odor_plot_line3.setData(self.k+self.T,self.buffer[:,5])
         self.odor_plot_line4.setData(self.k+self.T,self.buffer[:,6])
+        self.target_odor_line.setData(self.k+self.T,self.buffer[:,5]/100)
         #print(self.buffer_h5.size)
     
     def run(self):
@@ -117,7 +119,8 @@ class VOTASniffMeasure(Measurement):
         """
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
         self.buffer = np.zeros((10000,num_of_chan+4), dtype=float)
-        self.odor_gen.run()
+        self.buffer[0:self.settings.tdelay.value(),3]=100;
+        #self.odor_gen.make_ladder()
         
         # first, create a data file
         if self.settings['save_h5']:
@@ -153,7 +156,8 @@ class VOTASniffMeasure(Measurement):
                     if j>(self.buffer_h5.shape[0]-step_size):
                         self.buffer_h5.resize((self.buffer_h5.shape[0]+self.buffer.shape[0],self.buffer.shape[1]))
                         self.k +=10
-                
+                if (i%25==0):
+                    self.odor_gen.random()
                 # Set progress bar percentage complete
                 self.settings['progress'] = i * 100./self.buffer.shape[0]
                 
@@ -161,10 +165,24 @@ class VOTASniffMeasure(Measurement):
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
                 
                 if self.odor_gen.buffer_empty():
-                    self.buffer[i:(i+step_size),num_of_chan:(num_of_chan+4)]=[3500,0,0,0]
+                    odor_value=[100,0,0,0]
+                    odor_disp_value=odor_value
                 else:
-                    self.buffer[i:(i+step_size),num_of_chan:(num_of_chan+4)]=self.odor_gen.read()
-                
+                    odor_value_packet=self.odor_gen.read()
+                    odor_value=odor_value_packet[0]
+                    odor_disp_value=odor_value_packet[1]
+                    
+                tdelay=self.settings.tdelay.value()
+                if i>self.buffer.shape[0]-tdelay-step_size:
+                    wrap=i-self.buffer.shape[0]+tdelay
+                    
+                    self.buffer[wrap:(wrap+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
+                else:
+                    self.buffer[(i+tdelay):(i+tdelay+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
+                #self.arduino_sol._dev.write(odor_value)
+                self.arduino_sol.load(odor_value)
+                self.arduino_sol.write()
+                 
                 
                 if self.settings['save_h5']:
                     # if we are saving data to disk, copy data to H5 dataset
@@ -188,7 +206,7 @@ class VOTASniffMeasure(Measurement):
                     # The interrupt button is a polite request to the 
                     # Measurement thread. We must periodically check for
                     # an interrupt request
-                    self.arduino_sol.write([3500,0,0,0])
+                    self.arduino_sol.write_default()
                     self.daq_ai.stop()
                     self.odor_gen.flush()
                     break
