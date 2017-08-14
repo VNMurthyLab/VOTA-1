@@ -52,7 +52,11 @@ class ArduinoSolHW(HardwareComponent):
         
         self.load_sol_params()
         
-        
+        self.speed_coeffs=[]
+        self.speed_coeffs.append(self.settings.New(name='clean_coeff',initial=1,dtype=float,ro=False))
+        self.speed_coeffs.append(self.settings.New(name='speed_coeff1',initial=1,dtype=float,ro=False))
+        self.speed_coeffs.append(self.settings.New(name='speed_coeff2',initial=1,dtype=float,ro=False))
+        self.speed_coeffs.append(self.settings.New(name='speed_coeff3',initial=1,dtype=float,ro=False))
 
 
     def connect(self):
@@ -70,8 +74,9 @@ class ArduinoSolHW(HardwareComponent):
             p=self.p[i].value()
             va=self.va[i].value()
             vb=self.vb[i].value()
+            coeff=self.speed_coeffs[i].value()
             
-            x=self.sols[i].value()
+            x=int(self.sols[i].value()*coeff)
             if x==0:
                 sol_vals.append(0)
             elif x==1:
@@ -83,6 +88,14 @@ class ArduinoSolHW(HardwareComponent):
                     sol_vals.append(int(a*exp(b*x)+c*exp(d*x)))
                 else:
                     sol_vals.append(int(p+k*x))
+        
+        self._dev.write(sol_vals)
+        
+    def write_raw(self):
+        sol_vals=[]
+        for i in range(len(self.sols)):
+            x=self.sols[i].value()
+            sol_vals.append(int(x))
         
         self._dev.write(sol_vals)
         
@@ -119,15 +132,15 @@ class ArduinoSolHW(HardwareComponent):
             pass
         
     def load_sol_params(self):
-#         self.a[1].update_value()
-#         self.b[1].update_value()
-#         self.c[1].update_value()
-#         self.d[1].update_value()
-#         self.k[1].update_value()
-#         self.p[1].update_value()
-#         self.va[1].update_value()
-#         self.vb[1].update_value()
-# 
+        self.a[1].update_value(1170)
+        self.b[1].update_value(0.001481)
+        self.c[1].update_value(-119.6)
+        self.d[1].update_value(-0.1885)
+        self.k[1].update_value(1.369)
+        self.p[1].update_value(1183)
+        self.va[1].update_value(1068)
+        self.vb[1].update_value(1090)
+
         self.a[2].update_value(1295)
         self.b[2].update_value(0.00337)
         self.c[2].update_value(-178)
@@ -136,15 +149,15 @@ class ArduinoSolHW(HardwareComponent):
         self.p[2].update_value(1318)
         self.va[2].update_value(1158)
         self.vb[2].update_value(1176)
-#         
-#         self.a[3].update_value()
-#         self.b[3].update_value()
-#         self.c[3].update_value()
-#         self.d[3].update_value()
-#         self.k[3].update_value()
-#         self.p[3].update_value()
-#         self.va[3].update_value()
-#         self.vb[3].update_value()
+      
+        self.a[3].update_value(1075)
+        self.b[3].update_value(0.002775)
+        self.c[3].update_value(-66.95)
+        self.d[3].update_value(-0.2807)
+        self.k[3].update_value(3.276)
+        self.p[3].update_value(1061)
+        self.va[3].update_value(1021)
+        self.vb[3].update_value(1041)
 
 if __name__ == '__main__':
     ai=DAQaiHW()

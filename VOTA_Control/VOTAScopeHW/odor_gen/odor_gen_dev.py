@@ -53,15 +53,15 @@ class OdorGenDev(object):
         self.data[:,sol]=wave
         self.disp_data[:,sol]=disp_wave
         
-    def random(self,sol,on_chance,on_pulse_ms,pre_pulse_ms,level_rand_func=randint):
+    def random(self,sol,on_chance,on_pulse_ms,pre_pulse_ms,vmini,vmaxi,level_rand_func=randint):
         dice=random()
         if dice<on_chance:
-            sol_level=level_rand_func(0,100)
+            sol_level=level_rand_func(vmini,vmaxi)
             data=np.zeros((on_pulse_ms,self.num_of_sol),dtype=float)
             disp_data=np.zeros((on_pulse_ms,self.num_of_sol),dtype=float)
             data[:,sol]=sol_level
             disp_data[:,sol]=sol_level
-            data[1:pre_pulse_ms,sol]=100
+            data[1:pre_pulse_ms,sol]=55
             data[:,0]=100-sol_level
             disp_data[:,0]=100-sol_level
             for i in range(on_pulse_ms):

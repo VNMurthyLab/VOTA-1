@@ -38,7 +38,7 @@ class VOTASniffMeasure(Measurement):
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
         self.settings.New('save_h5', dtype=bool, initial=False)
-        self.settings.New('tdelay', dtype=int, initial=80,ro=True)
+        self.settings.New('tdelay', dtype=int, initial=0,ro=False)
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -108,7 +108,9 @@ class VOTASniffMeasure(Measurement):
         self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,4]) 
         self.odor_plot_line3.setData(self.k+self.T,self.buffer[:,5])
         self.odor_plot_line4.setData(self.k+self.T,self.buffer[:,6])
+        self.target_odor_line.setData(self.k+self.T,self.buffer[:,4]/100)
         self.target_odor_line.setData(self.k+self.T,self.buffer[:,5]/100)
+        self.target_odor_line.setData(self.k+self.T,self.buffer[:,6]/100)
         #print(self.buffer_h5.size)
     
     def run(self):
@@ -163,6 +165,7 @@ class VOTASniffMeasure(Measurement):
                 
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
+                self.buffer[i,2]=self.buffer[i,0]-1.25
                 
                 if self.odor_gen.buffer_empty():
                     odor_value=[100,0,0,0]

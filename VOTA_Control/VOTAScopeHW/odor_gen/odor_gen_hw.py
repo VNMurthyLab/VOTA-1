@@ -9,6 +9,7 @@ from .odor_gen_dev import OdorGenDev
 from PyDAQmx import *
 import numpy as np
 import time
+from random import randint
 
 class OdorGenHW(HardwareComponent):
     '''
@@ -22,7 +23,7 @@ class OdorGenHW(HardwareComponent):
         add settings for analog input event
         '''
         self.settings.New(name='pulse_duration_ms',initial=24,dtype=int,ro=False,vmin=24,vmax=1000)
-        self.settings.New(name='preload_ms',initial=9,dtype=int,ro=True,vmin=2,vmax=15)
+        self.settings.New(name='preload_ms',initial=9,dtype=int,ro=False,vmin=2,vmax=15)
         self.settings.New(name='num_of_sol',initial=num_of_sol,dtype=int,ro=False)
         self.settings.New(name='buffer_size',initial=buffer_size,dtype=int,ro=True)
         
@@ -32,11 +33,7 @@ class OdorGenHW(HardwareComponent):
         
         self.settings.New(name='selected_sol',initial=2,dtype=int,ro=False)
         self.settings.New(name='on_chance',initial=0,dtype=float,ro=False)
-        self.odor_coeffs=[]
-        self.odor_coeffs.append(self.settings.New(name='clean_coeff',initial=1,dtype=float,ro=False))
-        self.odor_coeffs.append(self.settings.New(name='odor1_coeff',initial=1,dtype=float,ro=False))
-        self.odor_coeffs.append(self.settings.New(name='odor2_coeff',initial=1,dtype=float,ro=False))
-        self.odor_coeffs.append(self.settings.New(name='odor3_coeff',initial=1,dtype=float,ro=False))
+
         
 
         
@@ -56,7 +53,7 @@ class OdorGenHW(HardwareComponent):
         sol=self.settings.selected_sol.value()
         duty_cycle=self.settings.pulse_duration_ms.value()/1000.0
         preload=self.settings.preload_ms.value()
-        output=self._dev.gen_sqr_ladder(vmin=self.settings.vmin.value(),vmax=self.settings.vmax.value(),dc=duty_cycle,pre=preload)*self.odor_coeffs[sol].value()
+        output=self._dev.gen_sqr_ladder(vmin=self.settings.vmin.value(),vmax=self.settings.vmax.value(),dc=duty_cycle,pre=preload)
         clean=100-output
         #self._dev.set_sol(clean,0)
         self._dev.set_sol(clean,clean,0)
@@ -69,13 +66,21 @@ class OdorGenHW(HardwareComponent):
         #self._dev.set_sol(clean,0)
         self._dev.set_sol(clean,0)
         self._dev.load_all()
+        
+    def make_ladder_speed(self,vmini,vmaxi):
+        output=self._dev.gen_sqr_ladder(vmini,vmaxi,dc=0.5)
+        #self._dev.set_sol(clean,0)
+        self._dev.set_sol(output,output,self.settings.selected_sol.value())
+        self._dev.load_all()
     
     def random(self):
         sol=self.settings.selected_sol.value()
         on_chance=self.settings.on_chance.value()
         on_pulse_ms=self.settings.pulse_duration_ms.value()
         pre_pulse_ms=self.settings.preload_ms.value()
-        self._dev.random(sol,on_chance,on_pulse_ms,pre_pulse_ms)
+        vmini=self.settings.vmin.value()
+        vmaxi=self.settings.vmax.value()
+        self._dev.random(sol,on_chance,on_pulse_ms,pre_pulse_ms,vmini,vmaxi,randint)
         
     def disconnect(self):
         try:
