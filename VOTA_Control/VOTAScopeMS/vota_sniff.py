@@ -51,7 +51,7 @@ class VOTASniffMeasure(Measurement):
         self.daq_ai = self.app.hardware['daq_ai']
         self.arduino_sol =self.app.hardware['arduino_sol']
         self.odor_gen =self.app.hardware['odor_gen']
-
+        self.arduino_wheel =self.app.hardware['arduino_wheel']
 
     def setup_figure(self):
         """
@@ -73,17 +73,20 @@ class VOTASniffMeasure(Measurement):
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID vs target")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
-        self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Odor Output Target")
+        self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Position and Speed")
+        self.plot5 = self.graph_layout.addPlot(row=5,col=1,title="Odor Output Target")
         # Create PlotDataItem object ( a scatter plot on the axes )
         self.plot_line1 = self.plot1.plot([0])    
         self.plot_line2 = self.plot2.plot([0])
         self.plot_line3 = self.plot3.plot([0])
-             
-        self.odor_plot_line1 = self.plot4.plot([0])  
-        self.odor_plot_line2 = self.plot4.plot([1])  
-        self.odor_plot_line3 = self.plot4.plot([2])  
-        self.odor_plot_line4 = self.plot4.plot([3])  
+        self.plot_line4 = self.plot3.plot([0])     
+        self.odor_plot_line1 = self.plot5.plot([0])  
+        self.odor_plot_line2 = self.plot5.plot([1])  
+        self.odor_plot_line3 = self.plot5.plot([2])  
+        self.odor_plot_line4 = self.plot5.plot([3])  
         self.target_odor_line = self.plot2.plot([1])
+        self.position_line=self.plot4.plot([0])
+        self.speed_line=self.plot4.plot([1])
         
         self.plot_line1.setPen('r')
         self.plot_line2.setPen('g')
@@ -92,6 +95,9 @@ class VOTASniffMeasure(Measurement):
         self.odor_plot_line2.setPen('g')
         self.odor_plot_line3.setPen('b')
         self.odor_plot_line4.setPen('y')
+        self.position_line.setPen('g')
+        self.speed_line.setPen('r')
+
         self.T=np.linspace(0,10,10000)
         self.k=0
     
@@ -111,6 +117,8 @@ class VOTASniffMeasure(Measurement):
         self.target_odor_line.setData(self.k+self.T,self.buffer[:,4]/100)
         self.target_odor_line.setData(self.k+self.T,self.buffer[:,5]/100)
         self.target_odor_line.setData(self.k+self.T,self.buffer[:,6]/100)
+        self.position_line.setData(self.k+self.T,self.buffer[:,7])
+        self.speed_line.setData(self.k+self.T,self.buffer[:,8])
         #print(self.buffer_h5.size)
     
     def run(self):
@@ -120,10 +128,10 @@ class VOTASniffMeasure(Measurement):
         focus on data acquisition.
         """
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
-        self.buffer = np.zeros((10000,num_of_chan+4), dtype=float)
+        self.buffer = np.zeros((10000,num_of_chan+6), dtype=float)
         self.buffer[0:self.settings.tdelay.value(),3]=100;
         #self.odor_gen.make_ladder()
-        
+        position = 0
         # first, create a data file
         if self.settings['save_h5']:
             # if enabled will create an HDF5 file with the plotted data
@@ -166,6 +174,11 @@ class VOTASniffMeasure(Measurement):
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
                 self.buffer[i,2]=self.buffer[i,0]-1.25
+                if (i%10==0):
+                    speed=self.arduino_wheel.settings.speed.read_from_hardware()
+                    position+=speed
+                    self.buffer[i:(i+10),num_of_chan+4]=position*0.000779262240246
+                    self.buffer[i:(i+10),num_of_chan+5]=speed*0.0779262240246
                 
                 if self.odor_gen.buffer_empty():
                     odor_value=[100,0,0,0]
