@@ -29,7 +29,7 @@ class VOTASolenoidTestMeasure(Measurement):
         # This file can be edited graphically with Qt Creator
         # sibling_path function allows python to find a file in the same folder
         # as this python module
-        self.ui_filename = sibling_path(__file__, "ai_plot.ui")
+        self.ui_filename = sibling_path(__file__, "sniff_plot.ui")
         
         #Load ui file and convert it to a live QWidget of the user interface
         self.ui = load_qt_ui_file(self.ui_filename)
@@ -38,9 +38,9 @@ class VOTASolenoidTestMeasure(Measurement):
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
         self.settings.New('save_h5', dtype=bool, initial=False)
-        self.settings.New('tdelay', dtype=int, initial=80,ro=True)
-        self.settings.New('vmin',dtype=int,initial=700)
-        self.settings.New('vmax',dtype=int,initial=2000)
+        self.settings.New('tdelay', dtype=int, initial=0,ro=True)
+        self.settings.New('vmin',dtype=int,initial=0)
+        self.settings.New('vmax',dtype=int,initial=100)
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -53,6 +53,7 @@ class VOTASolenoidTestMeasure(Measurement):
         self.daq_ai = self.app.hardware['daq_ai']
         self.arduino_sol =self.app.hardware['arduino_sol']
         self.odor_gen =self.app.hardware['odor_gen']
+        self.arduino_wheel =self.app.hardware['arduino_wheel']
 
 
     def setup_figure(self):
@@ -70,22 +71,28 @@ class VOTASolenoidTestMeasure(Measurement):
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
         self.ui.plot_groupBox.layout().addWidget(self.graph_layout)
+        
+        self.aux_graph_layout=pg.GraphicsLayoutWidget()
+        self.ui.aux_plot_groupBox.layout().addWidget(self.aux_graph_layout)
 
         # Create PlotItem object (a set of axes)  
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
-        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID vs target")
+        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="Flowrate (L/min)")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
-        self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Odor Output Target")
+        self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Position and Speed")
+        self.plot5 = self.graph_layout.addPlot(row=5,col=1,title="Odor Output Target")
         # Create PlotDataItem object ( a scatter plot on the axes )
         self.plot_line1 = self.plot1.plot([0])    
         self.plot_line2 = self.plot2.plot([0])
         self.plot_line3 = self.plot3.plot([0])
-             
-        self.odor_plot_line1 = self.plot4.plot([0])  
-        self.odor_plot_line2 = self.plot4.plot([1])  
-        self.odor_plot_line3 = self.plot4.plot([2])  
-        self.odor_plot_line4 = self.plot4.plot([3])  
-        self.target_odor_line = self.plot2.plot([1])
+        self.plot_line4 = self.plot3.plot([0])     
+        self.odor_plot_line1 = self.plot5.plot([0])  
+        self.odor_plot_line2 = self.plot5.plot([1])  
+        self.odor_plot_line3 = self.plot5.plot([2])  
+        self.odor_plot_line4 = self.plot5.plot([3])  
+        #self.target_odor_line = self.plot1.plot([1])
+        self.position_line=self.plot4.plot([0])
+        self.speed_line=self.plot4.plot([1])
         
         self.plot_line1.setPen('r')
         self.plot_line2.setPen('g')
@@ -94,6 +101,9 @@ class VOTASolenoidTestMeasure(Measurement):
         self.odor_plot_line2.setPen('g')
         self.odor_plot_line3.setPen('b')
         self.odor_plot_line4.setPen('y')
+        self.position_line.setPen('g')
+        self.speed_line.setPen('r')
+
         self.T=np.linspace(0,10,10000)
         self.k=0
     
@@ -104,13 +114,17 @@ class VOTASolenoidTestMeasure(Measurement):
         its update frequency is defined by self.display_update_period
         """
         self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
-        self.plot_line2.setData(self.k+self.T,self.buffer[:,0]) 
+        self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
         self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
         self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,3]) 
         self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,4]) 
         self.odor_plot_line3.setData(self.k+self.T,self.buffer[:,5])
         self.odor_plot_line4.setData(self.k+self.T,self.buffer[:,6])
-        self.target_odor_line.setData(self.k+self.T,self.buffer[:,5]/100)
+        #self.target_odor_line.setData(self.k+self.T,self.buffer[:,4]/100)
+        #self.target_odor_line.setData(self.k+self.T,self.buffer[:,5]/100)
+        #self.target_odor_line.setData(self.k+self.T,self.buffer[:,6]/100)
+        self.position_line.setData(self.k+self.T,self.buffer[:,7])
+        self.speed_line.setData(self.k+self.T,self.buffer[:,8])
         #print(self.buffer_h5.size)
     
     def run(self):
@@ -120,10 +134,11 @@ class VOTASolenoidTestMeasure(Measurement):
         focus on data acquisition.
         """
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
-        self.buffer = np.zeros((10000,num_of_chan+4), dtype=float)
+        self.buffer = np.zeros((10000,num_of_chan+6), dtype=float)
         self.buffer[0:self.settings.tdelay.value(),3]=100;
-        self.odor_gen.make_ladder_speed(self.settings.vmin.value(),self.settings.vmax.value())
-        
+        self.odor_gen.make_ladder()
+        #self.odor_gen.make_ladder_clean()
+        position = 0
         # first, create a data file
         if self.settings['save_h5']:
             # if enabled will create an HDF5 file with the plotted data
@@ -165,31 +180,32 @@ class VOTASolenoidTestMeasure(Measurement):
                 
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
+                self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65
+                if (i%10==0):
+                    speed=self.arduino_wheel.settings.speed.read_from_hardware()
+                    position+=speed
+                    self.buffer[i:(i+10),num_of_chan+4]=position*0.000779262240246
+                    self.buffer[i:(i+10),num_of_chan+5]=speed*0.0779262240246
                 
                 if self.odor_gen.buffer_empty():
-                    odor_value=[0,0,0,0]
+                    odor_value=[100,0,0,0]
                     odor_disp_value=odor_value
                 else:
                     odor_value_packet=self.odor_gen.read()
                     odor_value=odor_value_packet[0]
                     odor_disp_value=odor_value_packet[1]
-                     
+                    
                 tdelay=self.settings.tdelay.value()
-#                 if i>self.buffer.shape[0]-tdelay-step_size:
-#                     wrap=i-self.buffer.shape[0]+tdelay
-#                     
-#                     self.buffer[wrap:(wrap+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
-#                 else:
-#                     self.buffer[(i+tdelay):(i+tdelay+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
-#                 #self.arduino_sol._dev.write(odor_value)
-#                 odor_disp_value=[]
-#                 for sol in self.arduino_sol.sols:
-#                     odor_disp_value.append(sol.value())
-                self.buffer[i:(i++step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
-                for i in range(4):
-                    self.arduino_sol.sols[i].update_value(odor_value[i])
-                self.arduino_sol.write()
-#                  
+                if i>self.buffer.shape[0]-tdelay-step_size:
+                    wrap=i-self.buffer.shape[0]+tdelay
+                    
+                    self.buffer[wrap:(wrap+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
+                else:
+                    self.buffer[(i+tdelay):(i+tdelay+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
+                #self.arduino_sol._dev.write(odor_value)
+                self.arduino_sol.load(odor_value)
+                self.arduino_sol._dev.write(odor_value)
+                 
                 
                 if self.settings['save_h5']:
                     # if we are saving data to disk, copy data to H5 dataset
@@ -213,7 +229,7 @@ class VOTASolenoidTestMeasure(Measurement):
                     # The interrupt button is a polite request to the 
                     # Measurement thread. We must periodically check for
                     # an interrupt request
-                    self.arduino_sol.write_low()
+                    self.arduino_sol.write_default()
                     self.daq_ai.stop()
                     self.odor_gen.flush()
                     break

@@ -29,7 +29,7 @@ class VOTASniffMeasure(Measurement):
         # This file can be edited graphically with Qt Creator
         # sibling_path function allows python to find a file in the same folder
         # as this python module
-        self.ui_filename = sibling_path(__file__, "ai_plot.ui")
+        self.ui_filename = sibling_path(__file__, "sniff_plot.ui")
         
         #Load ui file and convert it to a live QWidget of the user interface
         self.ui = load_qt_ui_file(self.ui_filename)
@@ -38,7 +38,7 @@ class VOTASniffMeasure(Measurement):
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
         self.settings.New('save_h5', dtype=bool, initial=False)
-        self.settings.New('tdelay', dtype=int, initial=0,ro=False)
+        self.settings.New('tdelay', dtype=int, initial=0,ro=True)
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -68,10 +68,13 @@ class VOTASniffMeasure(Measurement):
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
         self.ui.plot_groupBox.layout().addWidget(self.graph_layout)
+        
+        self.aux_graph_layout=pg.GraphicsLayoutWidget()
+        self.ui.aux_plot_groupBox.layout().addWidget(self.aux_graph_layout)
 
         # Create PlotItem object (a set of axes)  
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
-        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="PID vs target")
+        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="Flowrate (L/min)")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
         self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Position and Speed")
         self.plot5 = self.graph_layout.addPlot(row=5,col=1,title="Odor Output Target")
@@ -84,7 +87,7 @@ class VOTASniffMeasure(Measurement):
         self.odor_plot_line2 = self.plot5.plot([1])  
         self.odor_plot_line3 = self.plot5.plot([2])  
         self.odor_plot_line4 = self.plot5.plot([3])  
-        self.target_odor_line = self.plot2.plot([1])
+        self.target_odor_line = self.plot1.plot([1])
         self.position_line=self.plot4.plot([0])
         self.speed_line=self.plot4.plot([1])
         
@@ -108,7 +111,7 @@ class VOTASniffMeasure(Measurement):
         its update frequency is defined by self.display_update_period
         """
         self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
-        self.plot_line2.setData(self.k+self.T,self.buffer[:,0]) 
+        self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
         self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
         self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,3]) 
         self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,4]) 
@@ -173,7 +176,9 @@ class VOTASniffMeasure(Measurement):
                 
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
-                self.buffer[i,2]=self.buffer[i,0]-1.25
+                self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65
+                self.buffer[i,2]=int((5-self.buffer[i,2])/3)
+                lick=self.buffer[i,2]
                 if (i%10==0):
                     speed=self.arduino_wheel.settings.speed.read_from_hardware()
                     position+=speed

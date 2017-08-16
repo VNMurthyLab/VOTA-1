@@ -23,7 +23,8 @@ class OdorGenHW(HardwareComponent):
         add settings for analog input event
         '''
         self.settings.New(name='pulse_duration_ms',initial=24,dtype=int,ro=False,vmin=24,vmax=1000)
-        self.settings.New(name='preload_ms',initial=9,dtype=int,ro=False,vmin=2,vmax=15)
+        self.settings.New(name='preload_ms',initial=9,dtype=int,ro=False,vmin=0,vmax=15)
+        self.settings.New(name='preload_level',initial=75,dtype=int,ro=False,vmin=0,vmax=100)
         self.settings.New(name='num_of_sol',initial=num_of_sol,dtype=int,ro=False)
         self.settings.New(name='buffer_size',initial=buffer_size,dtype=int,ro=True)
         
@@ -31,7 +32,7 @@ class OdorGenHW(HardwareComponent):
         self.settings.New(name='vmin',initial=0,dtype=int,ro=False)
         self.settings.New(name='vmax',initial=100,dtype=int,ro=False)
         
-        self.settings.New(name='selected_sol',initial=2,dtype=int,ro=False)
+        self.settings.New(name='selected_sol',initial=1,dtype=int,ro=False)
         self.settings.New(name='on_chance',initial=0,dtype=float,ro=False)
 
         
@@ -41,7 +42,8 @@ class OdorGenHW(HardwareComponent):
     def connect(self):
         self._dev=OdorGenDev(self.settings.num_of_sol.value(),
                           self.settings.buffer_size.value(),
-                          self.settings.queue_size.value())
+                          self.settings.queue_size.value(),
+                          self.settings.preload_level.value())
         
         self.flush=self._dev.flush
         self.read=self._dev.read
@@ -55,16 +57,17 @@ class OdorGenHW(HardwareComponent):
         preload=self.settings.preload_ms.value()
         output=self._dev.gen_sqr_ladder(vmin=self.settings.vmin.value(),vmax=self.settings.vmax.value(),dc=duty_cycle,pre=preload)
         clean=100-output
+        #clean=np.zeros(output.shape)
         #self._dev.set_sol(clean,0)
         self._dev.set_sol(clean,clean,0)
         self._dev.set_sol(output.astype(int),output.astype(int),sol)
         self._dev.load_all()
         
     def make_ladder_clean(self):
-        output=self._dev.gen_sqr_ladder(vmin=0,vmax=1600,dc=0.5)
-        clean=1600-output
+        output=self._dev.gen_sqr_ladder(vmin=0,vmax=3600,dc=0.5)
+        clean=3600-output
         #self._dev.set_sol(clean,0)
-        self._dev.set_sol(clean,0)
+        self._dev.set_sol(clean,clean,0)
         self._dev.load_all()
         
     def make_ladder_speed(self,vmini,vmaxi):

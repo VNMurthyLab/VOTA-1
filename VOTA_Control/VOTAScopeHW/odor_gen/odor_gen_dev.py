@@ -14,7 +14,7 @@ class OdorGenDev(object):
     classdocs
     '''
 
-    def __init__(self,num_of_sol=4,buffer_size=1,queue_size=100000):
+    def __init__(self,num_of_sol=4,buffer_size=1,queue_size=100000,preload_level=40):
         '''
         Constructor
         '''
@@ -24,7 +24,7 @@ class OdorGenDev(object):
         self.sec=1000/buffer_size;
         self.queue_size=queue_size
         self.max_tick=queue_size
-        
+        self.preload_level=preload_level
         self.tick=0
         
         self.data=np.zeros((queue_size,num_of_sol),dtype=float)
@@ -43,7 +43,7 @@ class OdorGenDev(object):
         
         vals=vals.reshape((1,seglen))
         output[:]=vals
-        output[1:pre,:]=100
+        output[0:pre,:]=self.preload_level
         return output.transpose().reshape((self.queue_size,))
     
     def gen_sqr_ladder(self,vmin=0,vmax=100,dc=0.5,pre=9):
@@ -61,7 +61,7 @@ class OdorGenDev(object):
             disp_data=np.zeros((on_pulse_ms,self.num_of_sol),dtype=float)
             data[:,sol]=sol_level
             disp_data[:,sol]=sol_level
-            data[1:pre_pulse_ms,sol]=55
+            data[0:pre_pulse_ms,sol]=self.preload_level
             data[:,0]=100-sol_level
             disp_data[:,0]=100-sol_level
             for i in range(on_pulse_ms):
