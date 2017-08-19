@@ -3118,6 +3118,8 @@ curses.ascii|D:\Anaconda3\lib\curses\ascii.py
 curses.has_key|D:\Anaconda3\lib\curses\has_key.py
 curses.panel|D:\Anaconda3\lib\curses\panel.py
 curses.textpad|D:\Anaconda3\lib\curses\textpad.py
+cv2.__init__|D:\Anaconda3\lib\site-packages\cv2\__init__.py
+cv2.opencv_ffmpeg330_64|D:\Anaconda3\lib\site-packages\cv2\opencv_ffmpeg330_64.dll
 cwp|D:\Anaconda3\cwp.py
 cycler|D:\Anaconda3\lib\site-packages\cycler.py
 cython|D:\Anaconda3\lib\site-packages\cython.py
@@ -8261,6 +8263,7 @@ pyqtgraph.widgets.ValueLabel|D:\Anaconda3\lib\site-packages\pyqtgraph\widgets\Va
 pyqtgraph.widgets.VerticalLabel|D:\Anaconda3\lib\site-packages\pyqtgraph\widgets\VerticalLabel.py
 pyqtgraph.widgets.__init__|D:\Anaconda3\lib\site-packages\pyqtgraph\widgets\__init__.py
 pytest|D:\Anaconda3\lib\site-packages\pytest.py
+python3|D:\Anaconda3\python3.dll
 python35|D:\Anaconda3\python35.dll
 pythoncom|D:\Anaconda3\lib\site-packages\pythoncom.py
 pytz.__init__|D:\Anaconda3\lib\site-packages\pytz\__init__.py

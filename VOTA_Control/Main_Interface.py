@@ -14,7 +14,7 @@ class VOTAScopeApp(BaseMicroscopeApp):
         
         #Add App wide settings
         initial_data_save_dir = 'D:\Hao\Data'
-        self.settings.get_lq('save_dir').update_value(initial_data_save_dir)
+        self.settings.save_dir.update_value(initial_data_save_dir)
 
 
         #Add hardware components
@@ -29,6 +29,8 @@ class VOTAScopeApp(BaseMicroscopeApp):
         self.add_hardware(ArduinoWheelHW(self))
         from VOTAScopeHW.arduino_water.arduino_water_hw import ArduinoWaterHW
         self.add_hardware(ArduinoWaterHW(self))
+        from VOTAScopeHW.camera.camera_hw import CameraHW
+        self.add_hardware(CameraHW(self))
         
         #Add measurement components
         print("Create Measurement objects")
@@ -62,4 +64,5 @@ if __name__ == '__main__':
     app.hardware['odor_gen'].settings.connected.update_value(True)
     app.hardware['arduino_wheel'].settings.connected.update_value(True)
     app.hardware['arduino_water'].settings.connected.update_value(True)
+    app.hardware['camera'].settings.connected.update_value(True)
     sys.exit(app.exec_())

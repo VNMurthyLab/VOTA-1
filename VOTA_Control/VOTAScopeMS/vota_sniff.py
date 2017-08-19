@@ -12,6 +12,8 @@ import numpy as np
 import time
 from random import randint,random
 from PyQt5.QtWidgets import QDoubleSpinBox
+import cv2
+import os
 
 class VOTASniffMeasure(Measurement):
     
@@ -38,8 +40,9 @@ class VOTASniffMeasure(Measurement):
         # Measurement Specific Settings
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
-        self.settings.New('save_h5', dtype=bool, initial=False)
-        self.settings.New('train', dtype=bool, initial=False)
+        self.settings.New('save_movie', dtype=bool, initial=False,ro=False)
+        self.settings.New('save_h5', dtype=bool, initial=False,ro=False)
+        self.settings.New('train', dtype=bool, initial=False,ro=False)
         self.settings.New('tdelay', dtype=int, initial=0,ro=True)
         self.settings.New('trial_time',dtype=int,initial=10,ro=False)
         self.settings.New('lick_interval', dtype=int, initial=1,ro=False)
@@ -47,20 +50,21 @@ class VOTASniffMeasure(Measurement):
         self.settings.New('is_go', dtype=bool, initial=False,ro=False)
         self.settings.New('can_go', dtype=bool, initial=False,ro=False)
         self.settings.New('punishment', dtype=bool, initial=False,ro=False)
-        self.settings.New('total_drops', dtype=int, initial=0,ro=False)
+        self.settings.New('total_drops', dtype=int, initial=0,ro=True)
         
+        self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
         '''
         Initialize experiment settings
         '''
         self.exp_settings=[]
         self.exp_settings.append(self.settings.New('reward_onset',dtype=int, 
-                                                   initial=1,vmin=0,vmax=60,ro=False))
+                                                   initial=0,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('task_duration',dtype=int, 
-                                                   initial=5,vmin=0,vmax=60,ro=False))
+                                                   initial=3,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('reward_duration',dtype=int, 
                                                    initial=4,vmin=0,vmax=30,ro=False))
         self.exp_settings.append(self.settings.New('punishment_duration',dtype=int, 
-                                                   initial=10,vmin=0,vmax=60,ro=False))
+                                                   initial=1,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('trigger_odor',dtype=int, 
                                                    initial=3,vmin=1,vmax=3,ro=False))
         self.exp_settings.append(self.settings.New('cue_odor',dtype=int, 
@@ -80,11 +84,11 @@ class VOTASniffMeasure(Measurement):
         self.exp_settings.append(self.settings.New('ng_odor_time',dtype=int, 
                                                    initial=100,vmin=0,vmax=1000,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_repeats',dtype=int, 
-                                                   initial=20,vmin=0,vmax=100,ro=False))
+                                                   initial=10,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_level',dtype=int, 
                                                    initial=20,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_dc',dtype=int, 
-                                                   initial=30,vmin=0,vmax=100,ro=False))
+                                                   initial=40,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_time',dtype=int, 
                                                    initial=100,vmin=0,vmax=1000,ro=False))
         
@@ -105,13 +109,14 @@ class VOTASniffMeasure(Measurement):
                                                    initial=0,vmin=0,vmax=100.0,ro=True))
         
         
+        
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
         #self.buffer = np.zeros(10000, dtype=float)
         
         # Define how often to update display during a run
-        self.display_update_period = 0.1 
+        self.display_update_period = 0.04
         
         # Convenient reference to the hardware used in the measurement
         self.daq_ai = self.app.hardware['daq_ai']
@@ -119,6 +124,9 @@ class VOTASniffMeasure(Measurement):
         self.odor_gen =self.app.hardware['odor_gen']
         self.arduino_wheel =self.app.hardware['arduino_wheel']
         self.water=self.app.hardware['arduino_water']
+        self.camera=self.app.hardware['camera']
+        
+        self.app.settings.sample.update_value('Twitch')
 
         '''
         initialize tick for trial
@@ -137,13 +145,21 @@ class VOTASniffMeasure(Measurement):
         self.ui.start_pushButton.clicked.connect(self.start)
         self.ui.interrupt_pushButton.clicked.connect(self.interrupt)
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
+        self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
         self.settings.train.connect_to_widget(self.ui.train_checkBox)
         
         #self.settings.task_duration.connect_to_widget(self.ui.task_duration_doubleSpinBox)
+        '''
+        connect control panel to all the experiment settings
+        '''
         for exp_setting in self.exp_settings:
             exp_widget_name=exp_setting.name+'_doubleSpinBox'
             exp_widget=self.ui.findChild(QDoubleSpinBox,exp_widget_name)
             exp_setting.connect_to_widget(exp_widget)
+        
+        '''
+        connect control panel to all the experiment settings
+        '''
             
         for stat in self.stats:
             stat_widget_name=stat.name+'_doubleSpinBox'
@@ -156,18 +172,38 @@ class VOTASniffMeasure(Measurement):
         
         self.aux_graph_layout=pg.GraphicsLayoutWidget()
         self.ui.aux_plot_groupBox.layout().addWidget(self.aux_graph_layout)
-
+        
+        self.camera_layout=pg.GraphicsLayoutWidget()
+        self.ui.camera_groupBox.layout().addWidget(self.camera_layout)
+        
+        '''
+        add camera viewbox and image
+        '''
+        self.camera_view=pg.ViewBox()
+        self.camera_layout.addItem(self.camera_view)
+        self.camera_image=pg.ImageItem()
+        self.camera_view.addItem(self.camera_image)
+        
+        '''
+        Add Plots
+        '''
         # Create PlotItem object (a set of axes)  
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="Flowrate (L/min)")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
         self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Position and Speed")
         self.plot5 = self.graph_layout.addPlot(row=5,col=1,title="Odor Output Target")
+        
+        self.performance_plot=self.aux_graph_layout.addPlot(row=1,col=1,title='Performance')
+        self.success_plot=self.performance_plot.plot([0])
+        self.failure_plot=self.performance_plot.plot([1])
+        self.no_action_plot=self.performance_plot.plot([2])
+        
         # Create PlotDataItem object ( a scatter plot on the axes )
         self.plot_line1 = self.plot1.plot([0])    
         self.plot_line2 = self.plot2.plot([0])
         self.plot_line3 = self.plot3.plot([0])
-        self.plot_line4 = self.plot3.plot([0])     
+             
         self.clean_plot_line = self.plot5.plot([0])  
         self.odor_plot_line1 = self.plot5.plot([1])  
         self.odor_plot_line2 = self.plot5.plot([2])  
@@ -187,10 +223,18 @@ class VOTASniffMeasure(Measurement):
         
         self.position_line.setPen('w')
         self.speed_line.setPen('r')
-
+        
+        self.success_plot.setPen('g')
+        self.failure_plot.setPen('r')
+        self.no_action_plot.setPen('y')
+        
+        '''
+        initial time marks
+        '''
         self.T=np.linspace(0,10,10000)
         self.k=0
     
+                   
     def update_display(self):
         """
         Displays (plots) the numpy array self.buffer. 
@@ -199,7 +243,7 @@ class VOTASniffMeasure(Measurement):
         """
         self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
         self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
-        self.plot_line3.setData(self.T,self.buffer[:,2])
+        self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
         
         self.clean_plot_line.setData(self.k+self.T,self.buffer[:,7])
         self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,8]) 
@@ -210,12 +254,33 @@ class VOTASniffMeasure(Measurement):
         self.position_line.setData(self.k+self.T,self.buffer[:,3])
         self.speed_line.setData(self.k+self.T,self.buffer[:,4])
         #print(self.buffer_h5.size)
-    
+        ntrial=self.settings.num_of_trial.value()+1
+        self.success_plot.setData(self.stat_buffer[0:ntrial,0])
+        self.failure_plot.setData(self.stat_buffer[0:ntrial,1])
+        self.no_action_plot.setData(self.stat_buffer[0:ntrial,2])
+        
+        '''
+        update camera image
+        '''
+        if self.settings.movie_on.value():
+            self.camera_image.setImage(self.camera.read())
+            if self.settings.save_movie.value():
+                self.camera.write()
+
     def calc_stats(self):
         if self.settings.num_of_trial.value()>0:
             self.settings.success_percent.update_value(100.0*self.settings.num_of_success.value()/self.settings.num_of_trial.value())
             self.settings.failure_percent.update_value(100.0*self.settings.num_of_failure.value()/self.settings.num_of_trial.value())
             self.settings.no_action_percent.update_value(100.0*self.settings.num_of_no_action.value()/self.settings.num_of_trial.value())
+            self.stat_buffer[self.settings.num_of_trial.value(),0]=self.settings.success_percent.value()
+            self.stat_buffer[self.settings.num_of_trial.value(),1]=self.settings.failure_percent.value()
+            self.stat_buffer[self.settings.num_of_trial.value(),2]=self.settings.no_action_percent.value()
+            
+      
+    def lq_increment(self,lq,increment): 
+        temp=lq.value()
+        temp+=increment
+        lq.update_value(temp)
             
     def run_trial(self,lick):
         '''
@@ -240,20 +305,14 @@ class VOTASniffMeasure(Measurement):
                 #if trial time has passed, reset trial and load new 
                 self.trial_tick=0
                 
-                num_of_trial=self.settings.num_of_trial.value()
-                num_of_trial+=1
-                self.settings.num_of_trial.update_value(num_of_trial)
-                
                 if (self.settings.is_go.value() and self.settings.water_reward.value()):
-                    num_of_no_action=self.settings.num_of_no_action.value()
-                    num_of_no_action+=1
-                    self.settings.num_of_no_action.update_value(num_of_no_action)
+                    self.lq_increment(self.settings.num_of_no_action,1)
+                    self.lq_increment(self.settings.num_of_trial,1)
                     self.calc_stats()
                 
                 if (self.settings.is_go.value()==False):
-                    num_of_success=self.settings.num_of_success.value()
-                    num_of_success+=1
-                    self.settings.num_of_success.update_value(num_of_success)
+                    self.lq_increment(self.settings.num_of_success,1)
+                    self.lq_increment(self.settings.num_of_trial,1)
                     self.calc_stats()
                     
                 self.odor_gen.pulse(self.settings.trigger_odor.value(),
@@ -261,13 +320,13 @@ class VOTASniffMeasure(Measurement):
                     self.settings.trigger_dc.value(),
                     self.settings.trigger_odor_level.value())
                 dice=random()
-                if dice>1:
+                if dice>0.8:
                     
                    
                     self.settings.is_go.update_value(False)
                     self.settings.water_reward.update_value(False)
                     dice=random()
-                    if dice>0.5:
+                    if dice>1:
                         repeats=self.settings.ng_odor_repeats.value()
                         for i in range(repeats):
                             self.odor_gen.pulse(self.settings.cue_odor.value(),
@@ -311,9 +370,8 @@ class VOTASniffMeasure(Measurement):
                         if self.settings.water_reward.value():
                             self.water.give_water()
                             self.settings.water_reward.update_value(False)
-                            num_of_success=self.settings.num_of_success.value()
-                            num_of_success+=1
-                            self.settings.num_of_success.update_value(num_of_success)
+                            self.lq_increment(self.settings.num_of_success,1)
+                            self.lq_increment(self.settings.num_of_trial,1)
                             self.calc_stats()
                             
                     else:
@@ -324,9 +382,8 @@ class VOTASniffMeasure(Measurement):
                         self.settings.can_go.update_value(False)
                         self.settings.water_reward.update_value(False)
                         
-                        num_of_failure=self.settings.num_of_failure.value()
-                        num_of_failure+=1
-                        self.settings.num_of_failure.update_value(num_of_failure)
+                        self.lq_increment(self.settings.num_of_failure,1)
+                        self.lq_increment(self.settings.num_of_trial,1)
                         self.calc_stats()
                         
                 
@@ -339,9 +396,27 @@ class VOTASniffMeasure(Measurement):
         It should not update the graphical interface directly, and should only
         focus on data acquisition.
         """
+        '''
+        disable controls
+        '''
+        self.settings.save_h5.change_readonly(True)
+        self.settings.save_movie.change_readonly(True)
+        self.settings.train.change_readonly(True)
+        
+        self.ui.save_h5_checkBox.setEnabled(False)
+        self.ui.save_movie_checkBox.setEnabled(False)
+        self.ui.train_checkBox.setEnabled(False)
+        
+        if self.camera.connected.value():
+            self.settings.movie_on.update_value(True)
+        '''
+        initialize buffer
+        '''
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
         self.buffer = np.zeros((10000,num_of_chan+2+2+len(self.arduino_sol.sols)), dtype=float)
         self.buffer[0:self.settings.tdelay.value(),3]=100;
+        
+        self.stat_buffer=np.zeros((10000,5),dtype=float)
         '''
         initialize position
         '''
@@ -355,6 +430,10 @@ class VOTASniffMeasure(Measurement):
         for stat in self.stats:
             stat.update_value(0)
         '''
+        start camera
+        '''
+        
+        '''
         Decide whether to create HDF5 file or not
         '''
         # first, create a data file
@@ -362,17 +441,28 @@ class VOTASniffMeasure(Measurement):
             # if enabled will create an HDF5 file with the plotted data
             # first we create an H5 file (by default autosaved to app.settings['save_dir']
             # This stores all the hardware and app meta-data in the H5 file
-            self.h5file = h5_io.h5_base_file(app=self.app, measurement=self)
+            file_name_index=0
+            file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.h5'
+            while os.path.exists(file_name):
+                file_name_index+=1
+                file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.h5'
+                
+            self.h5file = h5_io.h5_base_file(app=self.app, fname=file_name,measurement=self)
             
             # create a measurement H5 group (folder) within self.h5file
             # This stores all the measurement meta-data in this group
             self.h5_group = h5_io.h5_create_measurement_group(measurement=self, h5group=self.h5file)
             
             # create an h5 dataset to store the data
-            self.buffer_h5 = self.h5_group.create_dataset(name  = 'buffer', 
+            self.buffer_h5 = self.h5_group.create_dataset(name  = 'data', 
                                                           shape = self.buffer.shape,
                                                           dtype = self.buffer.dtype,
                                                           maxshape=(None,self.buffer.shape[1]))
+        
+        if self.settings.save_movie.value():
+            movie_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
+            self.camera.settings.file_name.update_value(movie_name)
+            self.camera.open_file()
         
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
@@ -510,12 +600,30 @@ class VOTASniffMeasure(Measurement):
                     # The interrupt button is a polite request to the 
                     # Measurement thread. We must periodically check for
                     # an interrupt request
-                    self.arduino_sol.write_default()
-                    self.daq_ai.stop()
-                    self.odor_gen.flush()
                     break
 
-        finally:            
+        finally:
+            
+            if self.camera.connected.value():
+                self.settings.movie_on.update_value(False)
+            
+            if self.settings.save_movie.value():
+                self.camera.close_file()
+            
+            self.settings.save_h5.change_readonly(False)
+            self.settings.save_movie.change_readonly(False)
+            self.settings.train.change_readonly(False)
+            
+            self.ui.save_h5_checkBox.setEnabled(True)
+            self.ui.save_movie_checkBox.setEnabled(True)
+            self.ui.train_checkBox.setEnabled(True)
+            
+            self.arduino_sol.write_default()
+            self.daq_ai.stop()
+            self.odor_gen.flush()            
             if self.settings['save_h5']:
+                self.buffer_h5 = self.h5_group.create_dataset(name  = 'stats', 
+                                                          shape = self.stat_buffer.shape,
+                                                          dtype = self.stat_buffer.dtype)
                 # make sure to close the data file
                 self.h5file.close()
