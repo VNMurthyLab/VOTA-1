@@ -4,6 +4,9 @@ VOTAScopeHW.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\__init__.py
 VOTAScopeHW.arduino_sol.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\__init__.py
 VOTAScopeHW.arduino_sol.arduino_sol_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_dev.py
 VOTAScopeHW.arduino_sol.arduino_sol_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_hw.py
+VOTAScopeHW.arduino_water.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_water\__init__.py
+VOTAScopeHW.arduino_water.arduino_water_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_water\arduino_water_dev.py
+VOTAScopeHW.arduino_water.arduino_water_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_water\arduino_water_hw.py
 VOTAScopeHW.arduino_wheel.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_wheel\__init__.py
 VOTAScopeHW.arduino_wheel.arduino_wheel_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_wheel\arduino_wheel_dev.py
 VOTAScopeHW.arduino_wheel.arduino_wheel_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_wheel\arduino_wheel_hw.py
@@ -15,5 +18,6 @@ VOTAScopeHW.odor_gen.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\__in
 VOTAScopeHW.odor_gen.odor_gen_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_dev.py
 VOTAScopeHW.odor_gen.odor_gen_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_hw.py
 VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
+VOTAScopeMS.lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\lick_training.py
 VOTAScopeMS.vota_sniff|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py
 VOTAScopeMS.vota_solenoid_test|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_solenoid_test.py

@@ -11,6 +11,7 @@ import pyqtgraph as pg
 import numpy as np
 import time
 from random import randint,random
+from PyQt5.QtWidgets import QDoubleSpinBox
 
 class VOTASniffMeasure(Measurement):
     
@@ -38,7 +39,72 @@ class VOTASniffMeasure(Measurement):
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
         self.settings.New('save_h5', dtype=bool, initial=False)
+        self.settings.New('train', dtype=bool, initial=False)
         self.settings.New('tdelay', dtype=int, initial=0,ro=True)
+        self.settings.New('trial_time',dtype=int,initial=10,ro=False)
+        self.settings.New('lick_interval', dtype=int, initial=1,ro=False)
+        self.settings.New('water_reward', dtype=bool, initial=False,ro=False)
+        self.settings.New('is_go', dtype=bool, initial=False,ro=False)
+        self.settings.New('can_go', dtype=bool, initial=False,ro=False)
+        self.settings.New('punishment', dtype=bool, initial=False,ro=False)
+        self.settings.New('total_drops', dtype=int, initial=0,ro=False)
+        
+        '''
+        Initialize experiment settings
+        '''
+        self.exp_settings=[]
+        self.exp_settings.append(self.settings.New('reward_onset',dtype=int, 
+                                                   initial=1,vmin=0,vmax=60,ro=False))
+        self.exp_settings.append(self.settings.New('task_duration',dtype=int, 
+                                                   initial=5,vmin=0,vmax=60,ro=False))
+        self.exp_settings.append(self.settings.New('reward_duration',dtype=int, 
+                                                   initial=4,vmin=0,vmax=30,ro=False))
+        self.exp_settings.append(self.settings.New('punishment_duration',dtype=int, 
+                                                   initial=10,vmin=0,vmax=60,ro=False))
+        self.exp_settings.append(self.settings.New('trigger_odor',dtype=int, 
+                                                   initial=3,vmin=1,vmax=3,ro=False))
+        self.exp_settings.append(self.settings.New('cue_odor',dtype=int, 
+                                                   initial=1,vmin=1,vmax=3,ro=False))
+        self.exp_settings.append(self.settings.New('trigger_dc',dtype=int, 
+                                                   initial=50,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('trigger_odor_level',dtype=int, 
+                                                   initial=50,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('trigger_time',dtype=int, 
+                                                   initial=500,vmin=0,vmax=1000,ro=False))
+        self.exp_settings.append(self.settings.New('ng_odor_repeats',dtype=int, 
+                                                   initial=5,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('ng_odor_level',dtype=int, 
+                                                   initial=80,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('ng_odor_dc',dtype=int, 
+                                                   initial=60,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('ng_odor_time',dtype=int, 
+                                                   initial=100,vmin=0,vmax=1000,ro=False))
+        self.exp_settings.append(self.settings.New('go_odor_repeats',dtype=int, 
+                                                   initial=20,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('go_odor_level',dtype=int, 
+                                                   initial=20,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('go_odor_dc',dtype=int, 
+                                                   initial=30,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('go_odor_time',dtype=int, 
+                                                   initial=100,vmin=0,vmax=1000,ro=False))
+        
+        self.stats=[]
+        self.stats.append(self.settings.New('num_of_trial',dtype=int, 
+                                                   initial=0,vmin=0,ro=True))
+        self.stats.append(self.settings.New('num_of_success',dtype=int, 
+                                                   initial=0,vmin=0,ro=True))
+        self.stats.append(self.settings.New('num_of_failure',dtype=int, 
+                                                   initial=0,vmin=0,ro=True))
+        self.stats.append(self.settings.New('num_of_no_action',dtype=int, 
+                                                   initial=0,vmin=0,ro=True))
+        self.stats.append(self.settings.New('success_percent',dtype=float, 
+                                                   initial=0,vmin=0,vmax=100.0,ro=True))
+        self.stats.append(self.settings.New('failure_percent',dtype=float, 
+                                                   initial=0,vmin=0,vmax=100.0,ro=True))
+        self.stats.append(self.settings.New('no_action_percent',dtype=float, 
+                                                   initial=0,vmin=0,vmax=100.0,ro=True))
+        
+        
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -52,7 +118,14 @@ class VOTASniffMeasure(Measurement):
         self.arduino_sol =self.app.hardware['arduino_sol']
         self.odor_gen =self.app.hardware['odor_gen']
         self.arduino_wheel =self.app.hardware['arduino_wheel']
+        self.water=self.app.hardware['arduino_water']
 
+        '''
+        initialize tick for trial
+        '''
+        self.trial_tick=0
+        self.punishment_tick=0
+        
     def setup_figure(self):
         """
         Runs once during App initialization, after setup()
@@ -64,6 +137,18 @@ class VOTASniffMeasure(Measurement):
         self.ui.start_pushButton.clicked.connect(self.start)
         self.ui.interrupt_pushButton.clicked.connect(self.interrupt)
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
+        self.settings.train.connect_to_widget(self.ui.train_checkBox)
+        
+        #self.settings.task_duration.connect_to_widget(self.ui.task_duration_doubleSpinBox)
+        for exp_setting in self.exp_settings:
+            exp_widget_name=exp_setting.name+'_doubleSpinBox'
+            exp_widget=self.ui.findChild(QDoubleSpinBox,exp_widget_name)
+            exp_setting.connect_to_widget(exp_widget)
+            
+        for stat in self.stats:
+            stat_widget_name=stat.name+'_doubleSpinBox'
+            stat_widget=self.ui.findChild(QDoubleSpinBox,stat_widget_name)
+            stat.connect_to_widget(stat_widget)
         
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
@@ -83,22 +168,24 @@ class VOTASniffMeasure(Measurement):
         self.plot_line2 = self.plot2.plot([0])
         self.plot_line3 = self.plot3.plot([0])
         self.plot_line4 = self.plot3.plot([0])     
-        self.odor_plot_line1 = self.plot5.plot([0])  
-        self.odor_plot_line2 = self.plot5.plot([1])  
-        self.odor_plot_line3 = self.plot5.plot([2])  
-        self.odor_plot_line4 = self.plot5.plot([3])  
-        self.target_odor_line = self.plot1.plot([1])
+        self.clean_plot_line = self.plot5.plot([0])  
+        self.odor_plot_line1 = self.plot5.plot([1])  
+        self.odor_plot_line2 = self.plot5.plot([2])  
+        self.odor_plot_line3 = self.plot5.plot([3])
         self.position_line=self.plot4.plot([0])
         self.speed_line=self.plot4.plot([1])
         
         self.plot_line1.setPen('r')
-        self.plot_line2.setPen('g')
+        self.plot_line2.setPen('w')
         self.plot_line3.setPen('b')
+        
+        self.clean_plot_line.setPen('b')
         self.odor_plot_line1.setPen('r')
         self.odor_plot_line2.setPen('g')
-        self.odor_plot_line3.setPen('b')
-        self.odor_plot_line4.setPen('y')
-        self.position_line.setPen('g')
+        self.odor_plot_line3.setPen('y')
+        
+        
+        self.position_line.setPen('w')
         self.speed_line.setPen('r')
 
         self.T=np.linspace(0,10,10000)
@@ -112,18 +199,140 @@ class VOTASniffMeasure(Measurement):
         """
         self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
         self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
-        self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
-        self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,3]) 
-        self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,4]) 
-        self.odor_plot_line3.setData(self.k+self.T,self.buffer[:,5])
-        self.odor_plot_line4.setData(self.k+self.T,self.buffer[:,6])
-        self.target_odor_line.setData(self.k+self.T,self.buffer[:,4]/100)
-        self.target_odor_line.setData(self.k+self.T,self.buffer[:,5]/100)
-        self.target_odor_line.setData(self.k+self.T,self.buffer[:,6]/100)
-        self.position_line.setData(self.k+self.T,self.buffer[:,7])
-        self.speed_line.setData(self.k+self.T,self.buffer[:,8])
+        self.plot_line3.setData(self.T,self.buffer[:,2])
+        
+        self.clean_plot_line.setData(self.k+self.T,self.buffer[:,7])
+        self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,8]) 
+        self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,9]) 
+        self.odor_plot_line3.setData(self.k+self.T,self.buffer[:,10])
+        
+       
+        self.position_line.setData(self.k+self.T,self.buffer[:,3])
+        self.speed_line.setData(self.k+self.T,self.buffer[:,4])
         #print(self.buffer_h5.size)
     
+    def calc_stats(self):
+        if self.settings.num_of_trial.value()>0:
+            self.settings.success_percent.update_value(100.0*self.settings.num_of_success.value()/self.settings.num_of_trial.value())
+            self.settings.failure_percent.update_value(100.0*self.settings.num_of_failure.value()/self.settings.num_of_trial.value())
+            self.settings.no_action_percent.update_value(100.0*self.settings.num_of_no_action.value()/self.settings.num_of_trial.value())
+            
+    def run_trial(self,lick):
+        '''
+        check the time tick and decide what to do
+        '''
+        
+        '''
+        Check to see if punishment period is over
+        '''
+        if self.settings.punishment.value():
+            #check to see if punishment time has passed
+            if self.punishment_tick>(self.settings.punishment_duration.value()*1000):
+                self.settings.punishment.update_value(False)   #turn off punishment
+                self.punishment_tick=0
+            else:
+                self.punishment_tick+=1 #increase punishment tick and wait
+        else:
+            '''
+            the mouse is not under punishment, run trial
+            '''
+            if self.trial_tick>(self.settings.task_duration.value()*1000):
+                #if trial time has passed, reset trial and load new 
+                self.trial_tick=0
+                
+                num_of_trial=self.settings.num_of_trial.value()
+                num_of_trial+=1
+                self.settings.num_of_trial.update_value(num_of_trial)
+                
+                if (self.settings.is_go.value() and self.settings.water_reward.value()):
+                    num_of_no_action=self.settings.num_of_no_action.value()
+                    num_of_no_action+=1
+                    self.settings.num_of_no_action.update_value(num_of_no_action)
+                    self.calc_stats()
+                
+                if (self.settings.is_go.value()==False):
+                    num_of_success=self.settings.num_of_success.value()
+                    num_of_success+=1
+                    self.settings.num_of_success.update_value(num_of_success)
+                    self.calc_stats()
+                    
+                self.odor_gen.pulse(self.settings.trigger_odor.value(),
+                    self.settings.trigger_time.value(),
+                    self.settings.trigger_dc.value(),
+                    self.settings.trigger_odor_level.value())
+                dice=random()
+                if dice>1:
+                    
+                   
+                    self.settings.is_go.update_value(False)
+                    self.settings.water_reward.update_value(False)
+                    dice=random()
+                    if dice>0.5:
+                        repeats=self.settings.ng_odor_repeats.value()
+                        for i in range(repeats):
+                            self.odor_gen.pulse(self.settings.cue_odor.value(),
+                                                self.settings.ng_odor_time.value(),
+                                                self.settings.ng_odor_dc.value(),
+                                                self.settings.ng_odor_level.value())
+                        #pulse(sol,pulse_ms,pulse_dc,level):
+                else:
+                    self.settings.is_go.update_value(True)
+                    self.settings.water_reward.update_value(True)
+                    repeats=self.settings.go_odor_repeats.value()
+                    for i in range(repeats):
+                        self.odor_gen.pulse(self.settings.cue_odor.value(),
+                                            self.settings.go_odor_time.value(),
+                                            self.settings.go_odor_dc.value(),
+                                            self.settings.go_odor_level.value())
+                        #pulse(sol,pulse_ms,pulse_dc,level):
+                self.settings.can_go.update_value(False)
+                
+                
+            else:
+                
+                '''
+                check to see if the mouse is in the go zone
+                '''
+                reward_onset_time=self.settings.reward_onset.value()*1000
+                reward_offset_time=reward_onset_time+self.settings.reward_duration.value()*1000
+                
+                if (self.settings.is_go.value() and (self.trial_tick in range(reward_onset_time,reward_offset_time))):
+                        self.settings.can_go.update_value(True)
+                '''
+                set up water reward if necessary
+                '''
+                
+                '''
+                check if mouse have licked, and decide its punishment or reward
+                '''
+                if lick:
+                    if self.settings.can_go.value():
+                        #give water reward if not taken
+                        if self.settings.water_reward.value():
+                            self.water.give_water()
+                            self.settings.water_reward.update_value(False)
+                            num_of_success=self.settings.num_of_success.value()
+                            num_of_success+=1
+                            self.settings.num_of_success.update_value(num_of_success)
+                            self.calc_stats()
+                            
+                    else:
+                        #punish and reset trial
+                        self.settings.punishment.update_value(True)
+                        self.trial_tick=0
+                        self.settings.is_go.update_value(False)
+                        self.settings.can_go.update_value(False)
+                        self.settings.water_reward.update_value(False)
+                        
+                        num_of_failure=self.settings.num_of_failure.value()
+                        num_of_failure+=1
+                        self.settings.num_of_failure.update_value(num_of_failure)
+                        self.calc_stats()
+                        
+                
+                #increment tick
+                self.trial_tick+=1
+                
     def run(self):
         """
         Runs when measurement is started. Runs in a separate thread from GUI.
@@ -131,10 +340,23 @@ class VOTASniffMeasure(Measurement):
         focus on data acquisition.
         """
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
-        self.buffer = np.zeros((10000,num_of_chan+6), dtype=float)
+        self.buffer = np.zeros((10000,num_of_chan+2+2+len(self.arduino_sol.sols)), dtype=float)
         self.buffer[0:self.settings.tdelay.value(),3]=100;
-        #self.odor_gen.make_ladder()
+        '''
+        initialize position
+        '''
         position = 0
+        '''
+        initialize number of water drops given
+        '''
+        total_drops=0
+        self.settings.total_drops.update_value(total_drops)
+        
+        for stat in self.stats:
+            stat.update_value(0)
+        '''
+        Decide whether to create HDF5 file or not
+        '''
         # first, create a data file
         if self.settings['save_h5']:
             # if enabled will create an HDF5 file with the plotted data
@@ -154,37 +376,96 @@ class VOTASniffMeasure(Measurement):
         
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
+        '''
+        start actual protocol
+        '''
         try:
-            i = 0
-            j = 0
-            self.k=0
+            '''
+            initialize counter ticks
+            '''
+            i = 0 #counter tick for loading buffer
+            j = 0 #counter tick for saving hdf5 file
+            self.k=0 #number of seconds saved
+            #water_tick=0 #
+            self.trial_tick=0
             step_size=self.daq_ai.settings.buffer_size.value()
            
+            '''
+            Start DAQ, Default at 1kHz
+            '''
             self.daq_ai.start()
             
             # Will run forever until interrupt is called.
+            '''
+            Expand HDF5 buffer when necessary
+            '''
             while not self.interrupt_measurement_called:
                 i %= self.buffer.shape[0]
                 if self.settings['save_h5']:
                     if j>(self.buffer_h5.shape[0]-step_size):
                         self.buffer_h5.resize((self.buffer_h5.shape[0]+self.buffer.shape[0],self.buffer.shape[1]))
                         self.k +=10
-                if (i%25==0):
-                    self.odor_gen.random()
-                # Set progress bar percentage complete
+                
+
+                '''
+                Update Progress Bar
+                '''
                 self.settings['progress'] = i * 100./self.buffer.shape[0]
                 
+                
+                
+#                 '''
+#                 update water status
+#                 '''
+#                 if (water_tick<(self.settings.lick_interval.value()*1000)):
+#                     water_tick+=1
+#                 else:
+#                     self.settings.water_reward.update_value(True)
+#                     water_tick=0
+                
+
+                
+                
+                
+                '''
+                Read DAQ sensor data(0:PID, 1:flowrate, 2:lick)
+                '''
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
-                self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65
-                self.buffer[i,2]=int((5-self.buffer[i,2])/3)
-                lick=self.buffer[i,2]
+                self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65 #convert flow rate from 0-1 L/min
+                self.buffer[i,2]=int((5-self.buffer[i,2])/3) #convert lick sensor into 0(no lick) and 1(lick)
+                
+                #ask if the animal licked in this interval
+                lick=bool(self.buffer[i,2])
+                if self.settings.train.value():
+                    self.run_trial(lick)
+                '''
+                Decide whether water will be given, based on the status of reward and lick
+                '''
+#                 if self.settings.water_reward.value():
+#                     if lick:
+#                         self.water.give_water()
+#                         self.settings.water_reward.update_value(False)
+#                         '''
+#                         save water given (5:If water given 6:water opened time)
+#                         '''
+#                         self.buffer[i,num_of_chan+2]=1
+#                         self.buffer[i,num_of_chan+3]=self.water.settings.open_time.value()
+#                         total_drops+=1
+#                         self.settings.total_drops.update_value(total_drops)
+                
+                '''
+                Read and save Position and Speed at 100Hz(default) (3:position 4:speed)
+                '''
                 if (i%10==0):
                     speed=self.arduino_wheel.settings.speed.read_from_hardware()
                     position+=speed
-                    self.buffer[i:(i+10),num_of_chan+4]=position*0.000779262240246
-                    self.buffer[i:(i+10),num_of_chan+5]=speed*0.0779262240246
+                    self.buffer[i:(i+10),num_of_chan]=position*0.000779262240246 #convert position into meters
+                    self.buffer[i:(i+10),num_of_chan+1]=speed*0.0779262240246 #convert speed to m/s
                 
+                '''
+                Read odor value from the odor generator, otherwise fill with clean air(default)
+                '''
                 if self.odor_gen.buffer_empty():
                     odor_value=[100,0,0,0]
                     odor_disp_value=odor_value
@@ -193,18 +474,20 @@ class VOTASniffMeasure(Measurement):
                     odor_value=odor_value_packet[0]
                     odor_disp_value=odor_value_packet[1]
                     
-                tdelay=self.settings.tdelay.value()
-                if i>self.buffer.shape[0]-tdelay-step_size:
-                    wrap=i-self.buffer.shape[0]+tdelay
-                    
-                    self.buffer[wrap:(wrap+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
-                else:
-                    self.buffer[(i+tdelay):(i+tdelay+step_size),num_of_chan:(num_of_chan+4)]=odor_disp_value
-                #self.arduino_sol._dev.write(odor_value)
+                '''
+                write odor value to valve
+                '''
                 self.arduino_sol.load(odor_value)
                 self.arduino_sol.write()
-                 
                 
+                '''
+                write odor value to display (7:clean air 8:odor1 9:odor2 10:odor3)
+                '''
+                self.buffer[i:(i+step_size),(num_of_chan+4):(num_of_chan+4+len(self.arduino_sol.sols))]=odor_disp_value
+                
+                '''
+                Save hdf5 file
+                '''
                 if self.settings['save_h5']:
                     # if we are saving data to disk, copy data to H5 dataset
                     self.buffer_h5[j:(j+step_size),:] = self.buffer[i:(i+step_size),:]

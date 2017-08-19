@@ -29,7 +29,7 @@ class VOTASolenoidTestMeasure(Measurement):
         # This file can be edited graphically with Qt Creator
         # sibling_path function allows python to find a file in the same folder
         # as this python module
-        self.ui_filename = sibling_path(__file__, "sniff_plot.ui")
+        self.ui_filename = sibling_path(__file__, "ai_plot.ui")
         
         #Load ui file and convert it to a live QWidget of the user interface
         self.ui = load_qt_ui_file(self.ui_filename)
@@ -54,7 +54,7 @@ class VOTASolenoidTestMeasure(Measurement):
         self.arduino_sol =self.app.hardware['arduino_sol']
         self.odor_gen =self.app.hardware['odor_gen']
         self.arduino_wheel =self.app.hardware['arduino_wheel']
-
+        self.water =self.app.hardware['arduino_water']
 
     def setup_figure(self):
         """
@@ -71,10 +71,7 @@ class VOTASolenoidTestMeasure(Measurement):
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
         self.ui.plot_groupBox.layout().addWidget(self.graph_layout)
-        
-        self.aux_graph_layout=pg.GraphicsLayoutWidget()
-        self.ui.aux_plot_groupBox.layout().addWidget(self.aux_graph_layout)
-
+    
         # Create PlotItem object (a set of axes)  
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="Flowrate (L/min)")

@@ -67,6 +67,20 @@ class OdorGenDev(object):
             for i in range(on_pulse_ms):
                 self.buffer.put([data[i,:].astype(int).squeeze().tolist(),disp_data[i,:].astype(int).squeeze().tolist()])
                 
+    def pulse(self,sol,pulse_ms,on_ms,pre_pulse_ms,sol_level):
+        data=np.zeros((pulse_ms,self.num_of_sol),dtype=float)
+        disp_data=np.zeros((pulse_ms,self.num_of_sol),dtype=float)
+        data[0:on_ms,sol]=sol_level
+        disp_data[0:on_ms:,sol]=sol_level
+        data[0:pre_pulse_ms,sol]=self.preload_level
+        data[0:on_ms,0]=100-sol_level
+        disp_data[0:on_ms,0]=100-sol_level
+        data[on_ms:pulse_ms,0]=100
+        disp_data[on_ms:pulse_ms,0]=100
+        for i in range(pulse_ms):
+            self.buffer.put([data[i,:].astype(int).squeeze().tolist(),disp_data[i,:].astype(int).squeeze().tolist()])
+    
+        
     
     def read(self):
         return self.buffer.get()

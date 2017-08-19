@@ -1,4 +1,5 @@
 from ScopeFoundry import BaseMicroscopeApp
+from PyQt5.QtGui import QColor
 
 class VOTAScopeApp(BaseMicroscopeApp):
 
@@ -26,9 +27,13 @@ class VOTAScopeApp(BaseMicroscopeApp):
         self.add_hardware(OdorGenHW(self))
         from VOTAScopeHW.arduino_wheel.arduino_wheel_hw import ArduinoWheelHW
         self.add_hardware(ArduinoWheelHW(self))
+        from VOTAScopeHW.arduino_water.arduino_water_hw import ArduinoWaterHW
+        self.add_hardware(ArduinoWaterHW(self))
         
         #Add measurement components
         print("Create Measurement objects")
+#         from VOTAScopeMS.lick_training import VOTALickTrainingMeasure
+#         self.add_measurement(VOTALickTrainingMeasure(self))
         from VOTAScopeMS.vota_sniff import VOTASniffMeasure
         self.add_measurement(VOTASniffMeasure(self))
 #         from VOTAScopeMS.vota_solenoid_test import VOTASolenoidTestMeasure
@@ -41,6 +46,10 @@ class VOTAScopeApp(BaseMicroscopeApp):
         self.ui.show()
         self.ui.activateWindow()
         
+        w=self.ui
+        p = w.palette()
+        p.setColor(w.backgroundRole(), QColor(0,0,0))
+        w.setPalette(p)
         #connect to main interface
 
 
@@ -52,4 +61,5 @@ if __name__ == '__main__':
     app.hardware['arduino_sol'].settings.connected.update_value(True)
     app.hardware['odor_gen'].settings.connected.update_value(True)
     app.hardware['arduino_wheel'].settings.connected.update_value(True)
+    app.hardware['arduino_water'].settings.connected.update_value(True)
     sys.exit(app.exec_())
