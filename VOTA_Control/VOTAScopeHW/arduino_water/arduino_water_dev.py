@@ -33,6 +33,12 @@ class ArduinoWaterDev(object):
     def read(self):
         return self.ser.readline()
     
+    def switch(self,water_on=False):
+        if water_on:
+            self.water_on()
+        else:
+            self.water_off()
+            
     def open(self):
         self.ser.open()
         time.sleep(2)

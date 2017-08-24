@@ -25,8 +25,9 @@ class CameraDev(object):
     
     def read(self):
         ret,self.frame = self.cap.read()
-        gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-        return gray
+        image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+        image = cv2.rotate(self.frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return image
     
     def open_file(self,fpath):
         self.fpath=fpath
@@ -34,7 +35,7 @@ class CameraDev(object):
         self.out = cv2.VideoWriter(self.fpath,fourcc, 20.0, (640,480))
         
     def write(self):
-        self.out.write(self.frame)
+        self.out.write(cv2.rotate(self.frame, cv2.ROTATE_180))
     
     def close_file(self):
         self.out.release()

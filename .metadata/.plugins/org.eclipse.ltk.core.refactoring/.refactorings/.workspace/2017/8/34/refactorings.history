@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Delete resource &apos;VOTA_Control/VOTAScopeMS/lick_training_plot.ui&apos;" deleteContents="false" description="Delete resource &apos;VOTA_Control/VOTAScopeMS/lick_training_plot.ui&apos;" element1="/VOTA_Control/VOTAScopeMS/lick_training_plot.ui" flags="7" id="org.eclipse.ltk.core.refactoring.delete.resources" resources="1" stamp="1503432027201"/>
+</session>

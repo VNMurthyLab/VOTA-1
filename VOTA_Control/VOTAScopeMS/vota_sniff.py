@@ -60,15 +60,17 @@ class VOTASniffMeasure(Measurement):
         self.exp_settings.append(self.settings.New('reward_onset',dtype=int, 
                                                    initial=0,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('task_duration',dtype=int, 
-                                                   initial=3,vmin=0,vmax=60,ro=False))
+                                                   initial=5,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('reward_duration',dtype=int, 
                                                    initial=4,vmin=0,vmax=30,ro=False))
         self.exp_settings.append(self.settings.New('punishment_duration',dtype=int, 
-                                                   initial=1,vmin=0,vmax=60,ro=False))
+                                                   initial=3,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('trigger_odor',dtype=int, 
-                                                   initial=3,vmin=1,vmax=3,ro=False))
-        self.exp_settings.append(self.settings.New('cue_odor',dtype=int, 
+                                                   initial=0,vmin=0,vmax=3,ro=False))
+        self.exp_settings.append(self.settings.New('go_odor',dtype=int, 
                                                    initial=1,vmin=1,vmax=3,ro=False))
+        self.exp_settings.append(self.settings.New('ng_odor',dtype=int, 
+                                                   initial=3,vmin=1,vmax=3,ro=False))
         self.exp_settings.append(self.settings.New('trigger_dc',dtype=int, 
                                                    initial=50,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('trigger_odor_level',dtype=int, 
@@ -76,21 +78,25 @@ class VOTASniffMeasure(Measurement):
         self.exp_settings.append(self.settings.New('trigger_time',dtype=int, 
                                                    initial=500,vmin=0,vmax=1000,ro=False))
         self.exp_settings.append(self.settings.New('ng_odor_repeats',dtype=int, 
-                                                   initial=5,vmin=0,vmax=100,ro=False))
+                                                   initial=1,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('ng_odor_level',dtype=int, 
-                                                   initial=80,vmin=0,vmax=100,ro=False))
+                                                   initial=50,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('ng_odor_dc',dtype=int, 
-                                                   initial=60,vmin=0,vmax=100,ro=False))
+                                                   initial=50,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('ng_odor_time',dtype=int, 
-                                                   initial=100,vmin=0,vmax=1000,ro=False))
+                                                   initial=1000,vmin=0,vmax=1000,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_repeats',dtype=int, 
-                                                   initial=10,vmin=0,vmax=100,ro=False))
+                                                   initial=1,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_level',dtype=int, 
-                                                   initial=20,vmin=0,vmax=100,ro=False))
+                                                   initial=50,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_dc',dtype=int, 
-                                                   initial=40,vmin=0,vmax=100,ro=False))
+                                                   initial=50,vmin=0,vmax=100,ro=False))
         self.exp_settings.append(self.settings.New('go_odor_time',dtype=int, 
-                                                   initial=100,vmin=0,vmax=1000,ro=False))
+                                                   initial=1000,vmin=0,vmax=1000,ro=False))
+        self.exp_settings.append(self.settings.New('go_chance',dtype=int, 
+                                                   initial=50,vmin=0,vmax=100,ro=False))
+        self.exp_settings.append(self.settings.New('ng_stim_chance',dtype=int, 
+                                                   initial=100,vmin=0,vmax=100,ro=False))
         
         self.stats=[]
         self.stats.append(self.settings.New('num_of_trial',dtype=int, 
@@ -147,6 +153,7 @@ class VOTASniffMeasure(Measurement):
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
         self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
         self.settings.train.connect_to_widget(self.ui.train_checkBox)
+        self.water.settings.water_on.connect_to_widget(self.ui.water_on_checkBox)
         
         #self.settings.task_duration.connect_to_widget(self.ui.task_duration_doubleSpinBox)
         '''
@@ -154,6 +161,7 @@ class VOTASniffMeasure(Measurement):
         '''
         for exp_setting in self.exp_settings:
             exp_widget_name=exp_setting.name+'_doubleSpinBox'
+            #print(exp_widget_name)
             exp_widget=self.ui.findChild(QDoubleSpinBox,exp_widget_name)
             exp_setting.connect_to_widget(exp_widget)
         
@@ -281,12 +289,45 @@ class VOTASniffMeasure(Measurement):
         temp=lq.value()
         temp+=increment
         lq.update_value(temp)
+        
+    def gen_stim(self,go_chance=0.8,ng_stim_chance=1):
+        
+        dice=random()
+        if dice>go_chance:
+            self.settings.can_go.update_value(False)
+            self.settings.is_go.update_value(False)
+            self.settings.water_reward.update_value(False)
+            dice=random()
+            if dice<ng_stim_chance:
+                repeats=self.settings.ng_odor_repeats.value()
+                for i in range(repeats):
+                    self.odor_gen.pulse(self.settings.ng_odor.value(),
+                                        self.settings.ng_odor_time.value(),
+                                        self.settings.ng_odor_dc.value(),
+                                        self.settings.ng_odor_level.value())
+                        #pulse(sol,pulse_ms,pulse_dc,level):
+        else:
+            self.settings.is_go.update_value(True)
+            self.settings.water_reward.update_value(True)
+            repeats=self.settings.go_odor_repeats.value()
+            for i in range(repeats):
+                self.odor_gen.pulse(self.settings.go_odor.value(),
+                                    self.settings.go_odor_time.value(),
+                                    self.settings.go_odor_dc.value(),
+                                    self.settings.go_odor_level.value())
+                        #pulse(sol,pulse_ms,pulse_dc,level):
+        
+        if not self.settings.trigger_odor.value()==0:
+            self.odor_gen.pulse(self.settings.trigger_odor.value(),
+                                self.settings.trigger_time.value(),
+                                self.settings.trigger_dc.value(),
+                                self.settings.trigger_odor_level.value())
+                    
             
     def run_trial(self,lick):
         '''
         check the time tick and decide what to do
         '''
-        
         '''
         Check to see if punishment period is over
         '''
@@ -295,7 +336,11 @@ class VOTASniffMeasure(Measurement):
             if self.punishment_tick>(self.settings.punishment_duration.value()*1000):
                 self.settings.punishment.update_value(False)   #turn off punishment
                 self.punishment_tick=0
+                self.trial_tick=0
+                self.gen_stim(self.settings.go_chance.value()/100.0,self.settings.ng_stim_chance.value()/100.0)
             else:
+                if lick:
+                    self.punishment_tick=0
                 self.punishment_tick+=1 #increase punishment tick and wait
         else:
             '''
@@ -315,37 +360,7 @@ class VOTASniffMeasure(Measurement):
                     self.lq_increment(self.settings.num_of_trial,1)
                     self.calc_stats()
                     
-                self.odor_gen.pulse(self.settings.trigger_odor.value(),
-                    self.settings.trigger_time.value(),
-                    self.settings.trigger_dc.value(),
-                    self.settings.trigger_odor_level.value())
-                dice=random()
-                if dice>0.8:
-                    
-                   
-                    self.settings.is_go.update_value(False)
-                    self.settings.water_reward.update_value(False)
-                    dice=random()
-                    if dice>1:
-                        repeats=self.settings.ng_odor_repeats.value()
-                        for i in range(repeats):
-                            self.odor_gen.pulse(self.settings.cue_odor.value(),
-                                                self.settings.ng_odor_time.value(),
-                                                self.settings.ng_odor_dc.value(),
-                                                self.settings.ng_odor_level.value())
-                        #pulse(sol,pulse_ms,pulse_dc,level):
-                else:
-                    self.settings.is_go.update_value(True)
-                    self.settings.water_reward.update_value(True)
-                    repeats=self.settings.go_odor_repeats.value()
-                    for i in range(repeats):
-                        self.odor_gen.pulse(self.settings.cue_odor.value(),
-                                            self.settings.go_odor_time.value(),
-                                            self.settings.go_odor_dc.value(),
-                                            self.settings.go_odor_level.value())
-                        #pulse(sol,pulse_ms,pulse_dc,level):
-                self.settings.can_go.update_value(False)
-                
+                self.gen_stim(self.settings.go_chance.value()/100.0,self.settings.ng_stim_chance.value()/100.0)
                 
             else:
                 
@@ -355,8 +370,12 @@ class VOTASniffMeasure(Measurement):
                 reward_onset_time=self.settings.reward_onset.value()*1000
                 reward_offset_time=reward_onset_time+self.settings.reward_duration.value()*1000
                 
+                
                 if (self.settings.is_go.value() and (self.trial_tick in range(reward_onset_time,reward_offset_time))):
-                        self.settings.can_go.update_value(True)
+                    self.settings.can_go.update_value(True)
+                else:
+                    self.settings.can_go.update_value(False)
+                
                 '''
                 set up water reward if necessary
                 '''
@@ -376,15 +395,16 @@ class VOTASniffMeasure(Measurement):
                             
                     else:
                         #punish and reset trial
+                        
+                        if not self.settings.is_go.value():
+                            self.lq_increment(self.settings.num_of_failure,1)
+                            self.lq_increment(self.settings.num_of_trial,1)
+                            self.calc_stats()
+                        
                         self.settings.punishment.update_value(True)
-                        self.trial_tick=0
                         self.settings.is_go.update_value(False)
                         self.settings.can_go.update_value(False)
                         self.settings.water_reward.update_value(False)
-                        
-                        self.lq_increment(self.settings.num_of_failure,1)
-                        self.lq_increment(self.settings.num_of_trial,1)
-                        self.calc_stats()
                         
                 
                 #increment tick
@@ -523,10 +543,10 @@ class VOTASniffMeasure(Measurement):
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
                 self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65 #convert flow rate from 0-1 L/min
-                self.buffer[i,2]=int((5-self.buffer[i,2])/3) #convert lick sensor into 0(no lick) and 1(lick)
+                self.buffer[i,2]=bool(int(2*(4-self.buffer[i,2]))) #convert lick sensor into 0(no lick) and 1(lick)
                 
                 #ask if the animal licked in this interval
-                lick=bool(self.buffer[i,2])
+                lick= bool(self.buffer[i,2])
                 if self.settings.train.value():
                     self.run_trial(lick)
                 '''
