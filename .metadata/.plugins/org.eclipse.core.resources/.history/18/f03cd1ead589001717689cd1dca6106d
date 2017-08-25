@@ -279,7 +279,6 @@ class VOTASniffMeasure(Measurement):
                     if self.settings.water_reward.value():
                         #give water reward if not taken
                         self.water.give_water()
-                        self.lq_increment(self.settings.total_drops,1)
                         self.settings.water_reward.update_value(False)
                         self.lq_increment(self.settings.num_of_success,1)
                         self.lq_increment(self.settings.num_of_trial,1)

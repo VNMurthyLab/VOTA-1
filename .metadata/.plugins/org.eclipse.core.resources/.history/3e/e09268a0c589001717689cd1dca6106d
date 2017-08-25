@@ -211,7 +211,7 @@ class VOTASniffMeasure(Measurement):
         """
         self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
         self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
-        self.plot_line3.setData(self.T,self.buffer[:,2])
+        self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
         
         self.clean_plot_line.setData(self.k+self.T,self.buffer[:,7])
         self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,8]) 
@@ -279,7 +279,6 @@ class VOTASniffMeasure(Measurement):
                     if self.settings.water_reward.value():
                         #give water reward if not taken
                         self.water.give_water()
-                        self.lq_increment(self.settings.total_drops,1)
                         self.settings.water_reward.update_value(False)
                         self.lq_increment(self.settings.num_of_success,1)
                         self.lq_increment(self.settings.num_of_trial,1)
