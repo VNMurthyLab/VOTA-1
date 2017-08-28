@@ -58,7 +58,7 @@ class VOTASniffMeasure(Measurement):
         '''
         self.exp_settings=[]
         self.exp_settings.append(self.settings.New('reward_onset',dtype=int, 
-                                                   initial=300,vmin=0,vmax=60000,ro=False))
+                                                   initial=0,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('task_duration',dtype=int, 
                                                    initial=5,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('reward_duration',dtype=int, 
@@ -139,7 +139,6 @@ class VOTASniffMeasure(Measurement):
         '''
         self.trial_tick=0
         self.punishment_tick=0
-        self.time_tick=0
         
     def setup_figure(self):
         """
@@ -264,9 +263,9 @@ class VOTASniffMeasure(Measurement):
         self.speed_line.setData(self.k+self.T,self.buffer[:,4])
         #print(self.buffer_h5.size)
         ntrial=self.settings.num_of_trial.value()+1
-        self.success_plot.setData(self.stat_buffer[0:ntrial,1])
-        self.failure_plot.setData(self.stat_buffer[0:ntrial,2])
-        self.no_action_plot.setData(self.stat_buffer[0:ntrial,3])
+        self.success_plot.setData(self.stat_buffer[0:ntrial,0])
+        self.failure_plot.setData(self.stat_buffer[0:ntrial,1])
+        self.no_action_plot.setData(self.stat_buffer[0:ntrial,2])
         
         '''
         update camera image
@@ -281,17 +280,11 @@ class VOTASniffMeasure(Measurement):
             self.settings.success_percent.update_value(100.0*self.settings.num_of_success.value()/self.settings.num_of_trial.value())
             self.settings.failure_percent.update_value(100.0*self.settings.num_of_failure.value()/self.settings.num_of_trial.value())
             self.settings.no_action_percent.update_value(100.0*self.settings.num_of_no_action.value()/self.settings.num_of_trial.value())
-            
-            self.stat_buffer[self.settings.num_of_trial.value(),0]=self.time_tick
-            self.stat_buffer[self.settings.num_of_trial.value(),1]=self.settings.success_percent.value()
-            self.stat_buffer[self.settings.num_of_trial.value(),2]=self.settings.failure_percent.value()
-            self.stat_buffer[self.settings.num_of_trial.value(),3]=self.settings.no_action_percent.value()
-            self.stat_buffer[self.settings.num_of_trial.value(),4]=self.settings.is_go.value()
-            
-            
+            self.stat_buffer[self.settings.num_of_trial.value(),0]=self.settings.success_percent.value()
+            self.stat_buffer[self.settings.num_of_trial.value(),1]=self.settings.failure_percent.value()
+            self.stat_buffer[self.settings.num_of_trial.value(),2]=self.settings.no_action_percent.value()
             if self.settings['save_h5']:
-                self.stat_buffer_h5[self.settings.num_of_trial.value(),:] = self.stat_buffer[self.settings.num_of_trial.value(),:]
-                self.h5file.flush()
+                pass
             
       
     def lq_increment(self,lq,increment): 
@@ -376,7 +369,7 @@ class VOTASniffMeasure(Measurement):
                 '''
                 check to see if the mouse is in the go zone
                 '''
-                reward_onset_time=self.settings.reward_onset.value()
+                reward_onset_time=self.settings.reward_onset.value()*1000
                 reward_offset_time=reward_onset_time+self.settings.reward_duration.value()*1000
                 
                 
@@ -400,7 +393,6 @@ class VOTASniffMeasure(Measurement):
                             self.settings.water_reward.update_value(False)
                             self.lq_increment(self.settings.num_of_success,1)
                             self.lq_increment(self.settings.num_of_trial,1)
-                            self.lq_increment(self.settings.total_drops,1)
                             self.calc_stats()
                             
                     else:
@@ -488,9 +480,6 @@ class VOTASniffMeasure(Measurement):
                                                           shape = self.buffer.shape,
                                                           dtype = self.buffer.dtype,
                                                           maxshape=(None,self.buffer.shape[1]))
-            self.stat_buffer_h5 = self.h5_group.create_dataset(name  = 'stats', 
-                                                          shape = self.stat_buffer.shape,
-                                                          dtype = self.stat_buffer.dtype)
             
         
         if self.settings.save_movie.value():
@@ -562,7 +551,6 @@ class VOTASniffMeasure(Measurement):
                 #ask if the animal licked in this interval
                 lick= bool(self.buffer[i,2])
                 if self.settings.train.value():
-                    self.time_tick = j
                     self.run_trial(lick)
                 '''
                 Decide whether water will be given, based on the status of reward and lick
@@ -657,5 +645,9 @@ class VOTASniffMeasure(Measurement):
             self.daq_ai.stop()
             self.odor_gen.flush()            
             if self.settings['save_h5']:
+                self.stat_buffer_h5 = self.h5_group.create_dataset(name  = 'stats', 
+                                                          shape = self.stat_buffer.shape,
+                                                          dtype = self.stat_buffer.dtype)
+                self.stat_buffer_5[:]=self.stat_buffer
                 # make sure to close the data file
                 self.h5file.close()

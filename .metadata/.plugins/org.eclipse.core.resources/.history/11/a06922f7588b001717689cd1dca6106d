@@ -400,7 +400,6 @@ class VOTASniffMeasure(Measurement):
                             self.settings.water_reward.update_value(False)
                             self.lq_increment(self.settings.num_of_success,1)
                             self.lq_increment(self.settings.num_of_trial,1)
-                            self.lq_increment(self.settings.total_drops,1)
                             self.calc_stats()
                             
                     else:

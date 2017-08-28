@@ -58,7 +58,7 @@ class VOTASniffMeasure(Measurement):
         '''
         self.exp_settings=[]
         self.exp_settings.append(self.settings.New('reward_onset',dtype=int, 
-                                                   initial=300,vmin=0,vmax=60000,ro=False))
+                                                   initial=0,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('task_duration',dtype=int, 
                                                    initial=5,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('reward_duration',dtype=int, 
@@ -376,7 +376,7 @@ class VOTASniffMeasure(Measurement):
                 '''
                 check to see if the mouse is in the go zone
                 '''
-                reward_onset_time=self.settings.reward_onset.value()
+                reward_onset_time=self.settings.reward_onset.value()*1000
                 reward_offset_time=reward_onset_time+self.settings.reward_duration.value()*1000
                 
                 
@@ -400,7 +400,6 @@ class VOTASniffMeasure(Measurement):
                             self.settings.water_reward.update_value(False)
                             self.lq_increment(self.settings.num_of_success,1)
                             self.lq_increment(self.settings.num_of_trial,1)
-                            self.lq_increment(self.settings.total_drops,1)
                             self.calc_stats()
                             
                     else:
