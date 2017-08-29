@@ -23,6 +23,7 @@ VOTAScopeHW.odor_gen.odor_gen_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\o
 VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
 VOTAScopeMS.lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\lick_training.py
 VOTAScopeMS.test_camera|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\test_camera.py
+VOTAScopeMS.vota_calibration|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_calibration.py
 VOTAScopeMS.vota_lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_lick_training.py
 VOTAScopeMS.vota_sniff|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py
 VOTAScopeMS.vota_solenoid_test|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_solenoid_test.py

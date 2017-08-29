@@ -34,7 +34,8 @@ class OdorGenHW(HardwareComponent):
         
         self.settings.New(name='selected_sol',initial=1,dtype=int,ro=False)
         self.settings.New(name='on_chance',initial=0,dtype=float,ro=False)
-        self.settings.New(name='clean_factor',initial=0.3,dtype=float,ro=False)
+        self.settings.New(name='clean_factor',initial=1.0,dtype=float,ro=False)
+        self.settings.New(name='clean_delay',initial=30,dtype=int,ro=False)
 
         
 
@@ -89,7 +90,7 @@ class OdorGenHW(HardwareComponent):
     def pulse(self,sol,pulse_ms,pulse_dc,level):
         pre_pulse_ms=self.settings.preload_ms.value()
         on_ms=int(0.01*pulse_dc*pulse_ms)
-        self._dev.pulse(sol,pulse_ms,on_ms,pre_pulse_ms,level,self.settings.clean_factor.value())
+        self._dev.pulse(sol,pulse_ms,on_ms,pre_pulse_ms,level,self.settings.clean_factor.value(),self.settings.clean_delay.value())
     
     def triggered_stimulus(self, *args):
         self._dev.triggered_stimulus(*args)

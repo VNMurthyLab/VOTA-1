@@ -711,7 +711,7 @@ selection-color: rgb(0, 0, 255);</string>
          <string notr="true">color: rgb(0, 170, 255)</string>
         </property>
         <property name="suffix">
-         <string>s</string>
+         <string>ms</string>
         </property>
         <property name="decimals">
          <number>0</number>

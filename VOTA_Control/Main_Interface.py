@@ -34,6 +34,8 @@ class VOTAScopeApp(BaseMicroscopeApp):
         
         #Add measurement components
         print("Create Measurement objects")
+        from VOTAScopeMS.vota_calibration import VOTACalibrationMeasure
+        self.add_measurement(VOTACalibrationMeasure(self))
         from VOTAScopeMS.lick_training import VOTALickTrainingMeasure
         self.add_measurement(VOTALickTrainingMeasure(self))
         from VOTAScopeMS.vota_sniff import VOTASniffMeasure
