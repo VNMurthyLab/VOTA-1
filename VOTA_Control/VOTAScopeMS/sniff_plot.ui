@@ -19,9 +19,513 @@
   <property name="styleSheet">
    <string notr="true">background-color: rgb(0, 0, 0);</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0">
+  <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0">
+   <item row="0" column="1" rowspan="3" colspan="2">
+    <widget class="QGroupBox" name="control_1groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="title">
+      <string>Experiment Settings</string>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="5" column="3">
+       <widget class="QDoubleSpinBox" name="go_odor_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDoubleSpinBox" name="ng_odor_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="2">
+       <widget class="QLabel" name="label_7">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>GO odor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="3">
+       <widget class="QDoubleSpinBox" name="go_odor_dc_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QDoubleSpinBox" name="ng_odor_time_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="3">
+       <widget class="QDoubleSpinBox" name="go_odor_time_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QDoubleSpinBox" name="ng_stim_chance_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 0, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="3">
+       <widget class="QDoubleSpinBox" name="go_chance_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_22">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 0, 0)</string>
+        </property>
+        <property name="text">
+         <string>ng odor chance</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="3">
+       <widget class="QDoubleSpinBox" name="go_odor_level_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2">
+       <widget class="QLabel" name="label_25">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0)</string>
+        </property>
+        <property name="text">
+         <string>Go odor chance</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="3">
+       <widget class="QDoubleSpinBox" name="go_odor_repeats_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
+       <widget class="QLabel" name="label_14">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>GO odor repeats</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="2">
+       <widget class="QLabel" name="label_11">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>GO odor level </string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="2">
+       <widget class="QLabel" name="label_16">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>GO odor dc</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QLabel" name="label_13">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="text">
+         <string>NG odor repeats</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="2">
+       <widget class="QLabel" name="label_12">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>Go odor time</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_17">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="text">
+         <string>NG odor level</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_19">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="text">
+         <string>NG odor time</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_18">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="text">
+         <string>NG odor dc</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QDoubleSpinBox" name="ng_odor_dc_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QDoubleSpinBox" name="ng_odor_repeats_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QDoubleSpinBox" name="ng_odor_level_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_26">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 85, 0)</string>
+        </property>
+        <property name="text">
+         <string>NG odor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>trigger odor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="trigger_odor_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>trigger odor level</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="trigger_odor_level_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_8">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>trigger time</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QDoubleSpinBox" name="trigger_time_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_9">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="text">
+         <string>trigger dc</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QDoubleSpinBox" name="trigger_dc_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 127)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QGroupBox" name="controls_groupBox_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="title">
+      <string>Status</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="lick_checkBox">
+        <property name="text">
+         <string>lick</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QCheckBox" name="can_go_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(85, 255, 0);</string>
+        </property>
+        <property name="text">
+         <string>can lick</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="go_lick_on_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="text">
+         <string>right lick</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="ng_lick_on_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 0, 0);</string>
+        </property>
+        <property name="text">
+         <string>wrong lick</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_3">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 170, 255)</string>
+        </property>
+        <property name="text">
+         <string>total drops</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QCheckBox" name="water_reward_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 170, 255);</string>
+        </property>
+        <property name="text">
+         <string>reward available</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QDoubleSpinBox" name="total_drops_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(0, 170, 255)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QCheckBox" name="punishment_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 0, 0);
+</string>
+        </property>
+        <property name="text">
+         <string>punishment</string>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <property name="tristate">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QCheckBox" name="is_go_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 255, 127);</string>
+        </property>
+        <property name="text">
+         <string>GO trial</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QGroupBox" name="controls_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 255, 255);</string>
      </property>
@@ -40,14 +544,17 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="start_pushButton">
+      <item row="1" column="1">
+       <widget class="QCheckBox" name="train_checkBox">
         <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 255);
-background-color: rgb(148, 148, 148);</string>
+         <string notr="true">color: rgb(170, 255, 0);
+
+QCheckBox::indicator:checked {
+    image: url(./checked.png);
+}</string>
         </property>
         <property name="text">
-         <string>Start</string>
+         <string>Training</string>
         </property>
        </widget>
       </item>
@@ -61,17 +568,18 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="train_checkBox">
+      <item row="1" column="0">
+       <widget class="QPushButton" name="start_pushButton">
         <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 0)</string>
+         <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="text">
-         <string>Training</string>
+         <string>Start</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="1" column="2">
        <widget class="QCheckBox" name="save_movie_checkBox">
         <property name="styleSheet">
          <string notr="true">color:rgb(170, 170, 255)</string>
@@ -81,7 +589,7 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
+      <item row="2" column="2">
        <widget class="QCheckBox" name="water_on_checkBox">
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 255, 255);
@@ -95,7 +603,7 @@ selection-color: rgb(0, 0, 255);</string>
      </layout>
     </widget>
    </item>
-   <item row="0" column="3" rowspan="3">
+   <item row="0" column="3" rowspan="5">
     <widget class="QGroupBox" name="summary_groupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -131,6 +639,22 @@ selection-color: rgb(0, 0, 255);</string>
          <string>Controls</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_4">
+         <item row="1" column="2">
+          <widget class="QDoubleSpinBox" name="success_percent_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">color: rgb(0, 255, 0)</string>
+           </property>
+           <property name="suffix">
+            <string>%</string>
+           </property>
+           <property name="decimals">
+            <number>2</number>
+           </property>
+          </widget>
+         </item>
          <item row="1" column="1">
           <widget class="QDoubleSpinBox" name="num_of_success_doubleSpinBox">
            <property name="enabled">
@@ -151,22 +675,6 @@ selection-color: rgb(0, 0, 255);</string>
            </property>
            <property name="text">
             <string>Total Trial</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QDoubleSpinBox" name="success_percent_doubleSpinBox">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">color: rgb(0, 255, 0)</string>
-           </property>
-           <property name="suffix">
-            <string>%</string>
-           </property>
-           <property name="decimals">
-            <number>2</number>
            </property>
           </widget>
          </item>
@@ -219,13 +727,16 @@ selection-color: rgb(0, 0, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_23">
-           <property name="styleSheet">
-            <string notr="true">color:rgb(255, 0, 0)</string>
+         <item row="3" column="1">
+          <widget class="QDoubleSpinBox" name="num_of_no_action_doubleSpinBox">
+           <property name="enabled">
+            <bool>true</bool>
            </property>
-           <property name="text">
-            <string>Failure</string>
+           <property name="styleSheet">
+            <string notr="true">color:rgb(255, 255, 0)</string>
+           </property>
+           <property name="decimals">
+            <number>0</number>
            </property>
           </widget>
          </item>
@@ -245,16 +756,13 @@ selection-color: rgb(0, 0, 255);</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="num_of_no_action_doubleSpinBox">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_23">
            <property name="styleSheet">
-            <string notr="true">color:rgb(255, 255, 0)</string>
+            <string notr="true">color:rgb(255, 0, 0)</string>
            </property>
-           <property name="decimals">
-            <number>0</number>
+           <property name="text">
+            <string>Failure</string>
            </property>
           </widget>
          </item>
@@ -323,8 +831,14 @@ selection-color: rgb(0, 0, 255);</string>
      </layout>
     </widget>
    </item>
-   <item row="1" column="0" rowspan="2" colspan="3">
+   <item row="3" column="0" rowspan="2" colspan="3">
     <widget class="QGroupBox" name="plot_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="minimumSize">
       <size>
        <width>0</width>
@@ -340,318 +854,21 @@ selection-color: rgb(0, 0, 255);</string>
      <layout class="QVBoxLayout" name="verticalLayout_3"/>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QGroupBox" name="control_1groupBox">
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="controls_groupBox_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(255, 255, 255);</string>
      </property>
      <property name="title">
-      <string>Experiment Settings</string>
+      <string>Task Config</string>
      </property>
-     <property name="checkable">
-      <bool>false</bool>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="3" column="2">
-       <widget class="QLabel" name="label_9">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>trigger dc</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QDoubleSpinBox" name="trigger_time_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLabel" name="label_8">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>trigger time</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QDoubleSpinBox" name="trigger_dc_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QDoubleSpinBox" name="ng_odor_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="3">
-       <widget class="QDoubleSpinBox" name="go_odor_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="2">
-       <widget class="QLabel" name="label_7">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>GO odor</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QDoubleSpinBox" name="trigger_odor_level_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="label_10">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>trigger odor level</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="1">
-       <widget class="QDoubleSpinBox" name="ng_odor_time_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="3">
-       <widget class="QDoubleSpinBox" name="go_odor_time_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="3">
-       <widget class="QDoubleSpinBox" name="go_odor_dc_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="1">
-       <widget class="QDoubleSpinBox" name="ng_stim_chance_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 0, 0)</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="3">
-       <widget class="QDoubleSpinBox" name="go_chance_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0)</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="label_22">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 0, 0)</string>
-        </property>
-        <property name="text">
-         <string>ng odor chance</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="2">
-       <widget class="QLabel" name="label_25">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0)</string>
-        </property>
-        <property name="text">
-         <string>Go odor chance</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="3">
-       <widget class="QDoubleSpinBox" name="go_odor_level_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="3">
-       <widget class="QDoubleSpinBox" name="go_odor_repeats_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 0, 0)</string>
-        </property>
-        <property name="text">
-         <string>punishment duration</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 170, 255)</string>
-        </property>
-        <property name="text">
-         <string>reward duration</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_15">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 170, 255)</string>
-        </property>
-        <property name="text">
-         <string>task duration</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="2">
-       <widget class="QLabel" name="label_14">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>GO odor repeats</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="2">
-       <widget class="QLabel" name="label_11">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>GO odor level </string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_13">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="text">
-         <string>NG odor repeats</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="label_5">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>trigger odor</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="2">
-       <widget class="QLabel" name="label_16">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>GO odor dc</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="2">
-       <widget class="QLabel" name="label_12">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(170, 255, 127)</string>
-        </property>
-        <property name="text">
-         <string>Go odor time</string>
-        </property>
-       </widget>
-      </item>
+     <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
         <property name="styleSheet">
@@ -659,49 +876,6 @@ selection-color: rgb(0, 0, 255);</string>
         </property>
         <property name="text">
          <string>reward onset</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_19">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="text">
-         <string>NG odor time</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_17">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="text">
-         <string>NG odor level</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="label_18">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="text">
-         <string>NG odor dc</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QDoubleSpinBox" name="task_duration_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 170, 255)</string>
-        </property>
-        <property name="suffix">
-         <string>s</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
         </property>
        </widget>
       </item>
@@ -718,20 +892,43 @@ selection-color: rgb(0, 0, 255);</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QDoubleSpinBox" name="ng_odor_dc_doubleSpinBox">
+      <item row="0" column="2">
+       <widget class="QLabel" name="label_28">
         <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
+         <string notr="true">color: rgb(170, 170, 255)</string>
+        </property>
+        <property name="text">
+         <string>lick threshold</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QDoubleSpinBox" name="punishment_extension_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255,0,0)</string>
         </property>
         <property name="suffix">
-         <string>%</string>
+         <string>s</string>
         </property>
         <property name="decimals">
          <number>0</number>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
+      <item row="0" column="3">
+       <widget class="QDoubleSpinBox" name="lick_threshold_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(170, 170, 255)</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
        <widget class="QDoubleSpinBox" name="punishment_duration_doubleSpinBox">
         <property name="styleSheet">
          <string notr="true">color: rgb(255,0,0)</string>
@@ -744,8 +941,38 @@ selection-color: rgb(0, 0, 255);</string>
         </property>
        </widget>
       </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_6">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 0, 0)</string>
+        </property>
+        <property name="text">
+         <string>punishment duration</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="label_27">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 0, 0)</string>
+        </property>
+        <property name="text">
+         <string>punishment extension</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 170, 255)</string>
+        </property>
+        <property name="text">
+         <string>task duration</string>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="1">
-       <widget class="QDoubleSpinBox" name="reward_duration_doubleSpinBox">
+       <widget class="QDoubleSpinBox" name="task_duration_doubleSpinBox">
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 170, 255)</string>
         </property>
@@ -757,49 +984,26 @@ selection-color: rgb(0, 0, 255);</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
-       <widget class="QDoubleSpinBox" name="ng_odor_repeats_doubleSpinBox">
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="QDoubleSpinBox" name="ng_odor_level_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QDoubleSpinBox" name="trigger_odor_doubleSpinBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127)</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_26">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 85, 0)</string>
+         <string notr="true">color: rgb(0, 170, 255)</string>
         </property>
         <property name="text">
-         <string>NG odor</string>
+         <string>reward duration</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QDoubleSpinBox" name="reward_duration_doubleSpinBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 170, 255)</string>
+        </property>
+        <property name="suffix">
+         <string>s</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
         </property>
        </widget>
       </item>

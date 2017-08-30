@@ -11,7 +11,7 @@ import pyqtgraph as pg
 import numpy as np
 import time
 from random import randint,random
-from PyQt5.QtWidgets import QDoubleSpinBox
+from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
 import cv2
 import os
 
@@ -46,17 +46,26 @@ class VOTASniffMeasure(Measurement):
         self.settings.New('tdelay', dtype=int, initial=0,ro=True)
         self.settings.New('trial_time',dtype=int,initial=10,ro=False)
         self.settings.New('lick_interval', dtype=int, initial=1,ro=False)
-        self.settings.New('water_reward', dtype=bool, initial=False,ro=False)
-        self.settings.New('is_go', dtype=bool, initial=False,ro=False)
-        self.settings.New('can_go', dtype=bool, initial=False,ro=False)
-        self.settings.New('punishment', dtype=bool, initial=False,ro=False)
-        self.settings.New('total_drops', dtype=int, initial=0,ro=True)
-        
         self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
+        
+        self.exp_states=[]
+        self.exp_states.append(self.settings.New('lick', dtype=bool, initial=False,ro=True))
+        self.exp_states.append(self.settings.New('water_reward', dtype=bool, initial=False,ro=True))
+        self.exp_states.append(self.settings.New('is_go', dtype=bool, initial=False,ro=True))
+        self.exp_states.append(self.settings.New('can_go', dtype=bool, initial=False,ro=True))
+        self.exp_states.append(self.settings.New('punishment', dtype=bool, initial=False,ro=True))
+       
+        self.exp_states.append(self.settings.New('go_lick_on',dtype=bool,initial=False,ro=True))
+        self.exp_states.append(self.settings.New('ng_lick_on',dtype=bool,initial=False,ro=True))
+       
+        
         '''
         Initialize experiment settings
         '''
         self.exp_settings=[]
+        self.exp_settings.append(self.settings.New('lick_threshold',dtype=int, 
+                                                   initial=300,vmin=0,vmax=60000,ro=False))
+        self.exp_settings.append(self.settings.New('total_drops', dtype=int, initial=0,ro=True))
         self.exp_settings.append(self.settings.New('reward_onset',dtype=int, 
                                                    initial=1000,vmin=0,vmax=60000,ro=False))
         self.exp_settings.append(self.settings.New('task_duration',dtype=int, 
@@ -65,6 +74,8 @@ class VOTASniffMeasure(Measurement):
                                                    initial=3,vmin=0,vmax=30,ro=False))
         self.exp_settings.append(self.settings.New('punishment_duration',dtype=int, 
                                                    initial=5,vmin=0,vmax=60,ro=False))
+        self.exp_settings.append(self.settings.New('punishment_extension',dtype=int, 
+                                                   initial=1,vmin=0,vmax=60,ro=False))
         self.exp_settings.append(self.settings.New('trigger_odor',dtype=int, 
                                                    initial=0,vmin=0,vmax=3,ro=False))
         self.exp_settings.append(self.settings.New('go_odor',dtype=int, 
@@ -140,6 +151,9 @@ class VOTASniffMeasure(Measurement):
         self.trial_tick=0
         self.punishment_tick=0
         self.time_tick=0
+        self.ng_lick_tick=0
+        self.go_lick_tick=0
+        self.extension_lick_tick=0
         
     def setup_figure(self):
         """
@@ -155,7 +169,14 @@ class VOTASniffMeasure(Measurement):
         self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
         self.settings.train.connect_to_widget(self.ui.train_checkBox)
         self.water.settings.water_on.connect_to_widget(self.ui.water_on_checkBox)
-        
+        self.ui.lick_checkBox.setStyleSheet('QCheckBox::indicator:checked{image: url(./icons/c_w.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_w.png);}')
+        #self.ui.train_checkBox.setStyleSheet('QCheckBox::indicator:checked{image: url(./VOTAScopeMS/checked.png);}QCheckBox::indicator:unchecked{image: url(./VOTAScopeMS/unchecked.png);}')
+        self.ui.go_lick_on_checkBox.setStyleSheet('QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+        self.ui.can_go_checkBox.setStyleSheet('QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+        self.ui.is_go_checkBox.setStyleSheet('QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+        self.ui.punishment_checkBox.setStyleSheet('QCheckBox{color:red;}QCheckBox::indicator:checked{image: url(./icons/c_r.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_r.png);}')
+        self.ui.ng_lick_on_checkBox.setStyleSheet('QCheckBox{color:red;}QCheckBox::indicator:checked{image: url(./icons/c_r.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_r.png);}')
+        self.ui.water_reward_checkBox.setStyleSheet('QCheckBox{color:cyan;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
         #self.settings.task_duration.connect_to_widget(self.ui.task_duration_doubleSpinBox)
         '''
         connect control panel to all the experiment settings
@@ -166,6 +187,11 @@ class VOTASniffMeasure(Measurement):
             exp_widget=self.ui.findChild(QDoubleSpinBox,exp_widget_name)
             exp_setting.connect_to_widget(exp_widget)
         
+        for exp_state in self.exp_states:
+            exp_widget_name=exp_state.name+'_checkBox'
+            print(exp_widget_name)
+            exp_widget=self.ui.findChild(QCheckBox,exp_widget_name)
+            exp_state.connect_to_widget(exp_widget)
         '''
         connect control panel to all the experiment settings
         '''
@@ -287,7 +313,7 @@ class VOTASniffMeasure(Measurement):
             self.stat_buffer[self.settings.num_of_trial.value(),2]=self.settings.failure_percent.value()
             self.stat_buffer[self.settings.num_of_trial.value(),3]=self.settings.no_action_percent.value()
             self.stat_buffer[self.settings.num_of_trial.value(),4]=self.settings.is_go.value()
-            
+            self.stat_buffer[self.settings.num_of_trial.value(),5]=self.settings.total_drops.value()
             
             if self.settings['save_h5']:
                 self.stat_buffer_h5[self.settings.num_of_trial.value(),:] = self.stat_buffer[self.settings.num_of_trial.value(),:]
@@ -298,6 +324,13 @@ class VOTASniffMeasure(Measurement):
         temp=lq.value()
         temp+=increment
         lq.update_value(temp)
+        
+    def reset_lick_tick(self):
+        self.go_lick_tick=0
+        self.ng_lick_tick=0
+        self.extension_lick_tick=0
+        self.settings.go_lick_on.update_value(False)
+        self.settings.ng_lick_on.update_value(False)
         
     def gen_stim(self,go_chance=0.8,ng_stim_chance=1):
         
@@ -335,10 +368,16 @@ class VOTASniffMeasure(Measurement):
                                 self.settings.trigger_odor_level.value())
                     
             
-    def run_trial(self,lick):
+    def run_trial(self):
+        lick=self.settings.lick.value()
         '''
         check the time tick and decide what to do
         '''
+        
+        '''
+        check the lick tick to see if lick is valid
+        '''
+        lick_threshold=self.settings.lick_threshold.value()
         '''
         Check to see if punishment period is over
         '''
@@ -348,10 +387,17 @@ class VOTASniffMeasure(Measurement):
                 self.settings.punishment.update_value(False)   #turn off punishment
                 self.punishment_tick=0
                 self.trial_tick=0
+                self.reset_lick_tick()
                 self.gen_stim(self.settings.go_chance.value()/100.0,self.settings.ng_stim_chance.value()/100.0)
             else:
                 if lick:
-                    self.punishment_tick=0
+                    self.extension_lick_tick+=1
+                '''
+                extend punishment if a vaild lick is detected 
+                '''
+                if self.extension_lick_tick>lick_threshold:
+                    self.punishment_tick-=self.settings.punishment_extension.value()*1000
+                    self.reset_lick_tick()
                 self.punishment_tick+=1 #increase punishment tick and wait
         else:
             '''
@@ -392,31 +438,49 @@ class VOTASniffMeasure(Measurement):
                 '''
                 
                 '''
-                check if mouse have licked, and decide its punishment or reward
+                update the lick ticks
                 '''
                 if lick:
                     if self.settings.can_go.value():
                         #give water reward if not taken
-                        if self.settings.water_reward.value():
-                            self.water.give_water()
-                            self.settings.water_reward.update_value(False)
-                            self.lq_increment(self.settings.num_of_success,1)
-                            self.lq_increment(self.settings.num_of_trial,1)
-                            self.lq_increment(self.settings.total_drops,1)
-                            self.calc_stats()
-                            
+                        self.go_lick_tick+=1
+                        if self.go_lick_tick>lick_threshold:
+                            self.settings.go_lick_on.update_value(True)
                     else:
+                        self.ng_lick_tick+=1
+                        if self.ng_lick_tick>lick_threshold:
+                            self.settings.ng_lick_on.update_value(True)
+                        
+                if self.settings.go_lick_on.value():
+                    #give water reward if not taken
+                    if self.settings.water_reward.value():
+                        self.water.give_water()
+                        self.settings.water_reward.update_value(False)
+                        self.reset_lick_tick()
+                        self.lq_increment(self.settings.num_of_success,1)
+                        self.lq_increment(self.settings.num_of_trial,1)
+                        self.lq_increment(self.settings.total_drops,1)
+                        self.calc_stats()
+                    else:
+                        '''
+                        if no water reward and still licking, just send to punishment - extension time
+                        '''
+                        self.settings.punishment.update_value(True)
+                        self.reset_lick_tick()
+                        self.punishment_tick=self.settings.punishment_duration.value()*1000-self.settings.punishment_extension.value()*1000
+                            
+                if self.settings.ng_lick_on.value():
                         #punish and reset trial
                         
-                        if not self.settings.is_go.value():
-                            self.lq_increment(self.settings.num_of_failure,1)
-                            self.lq_increment(self.settings.num_of_trial,1)
-                            self.calc_stats()
+                    self.reset_lick_tick()
+                    self.lq_increment(self.settings.num_of_failure,1)
+                    self.lq_increment(self.settings.num_of_trial,1)
+                    self.calc_stats()
                         
-                        self.settings.punishment.update_value(True)
-                        self.settings.is_go.update_value(False)
-                        self.settings.can_go.update_value(False)
-                        self.settings.water_reward.update_value(False)
+                    self.settings.punishment.update_value(True)
+                    self.settings.is_go.update_value(False)
+                    self.settings.can_go.update_value(False)
+                    self.settings.water_reward.update_value(False)
                         
                 
                 #increment tick
@@ -448,7 +512,7 @@ class VOTASniffMeasure(Measurement):
         self.buffer = np.zeros((10000,num_of_chan+2+2+len(self.arduino_sol.sols)), dtype=float)
         self.buffer[0:self.settings.tdelay.value(),3]=100;
         
-        self.stat_buffer=np.zeros((10000,5),dtype=float)
+        self.stat_buffer=np.zeros((10000,6),dtype=float)
         '''
         initialize position
         '''
@@ -560,12 +624,12 @@ class VOTASniffMeasure(Measurement):
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
                 self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65 #convert flow rate from 0-1 L/min
                 self.buffer[i,2]=bool(int(2*(4-self.buffer[i,2]))) #convert lick sensor into 0(no lick) and 1(lick)
-                
+
                 #ask if the animal licked in this interval
-                lick= bool(self.buffer[i,2])
+                self.settings.lick.update_value(bool(self.buffer[i,2]))
                 if self.settings.train.value():
                     self.time_tick = j
-                    self.run_trial(lick)
+                    self.run_trial()
                 '''
                 Decide whether water will be given, based on the status of reward and lick
                 '''
