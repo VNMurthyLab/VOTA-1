@@ -14,7 +14,7 @@ class CameraHW(HardwareComponent):
     
     name='camera'
 
-    def setup(self,camera_id=1):
+    def setup(self,camera_id=0):
         self.settings.New(name='camera_id',dtype=int,initial=camera_id,ro=False)
         self.settings.New(name='file_name',dtype=str,initial='D:\Hao\Data\Twitch.avi',ro=True)
                 

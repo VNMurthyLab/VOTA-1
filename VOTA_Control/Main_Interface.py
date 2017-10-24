@@ -38,8 +38,8 @@ class VOTAScopeApp(BaseMicroscopeApp):
         #self.add_measurement(VOTACalibrationMeasure(self))
         from VOTAScopeMS.lick_training import VOTALickTrainingMeasure
         self.add_measurement(VOTALickTrainingMeasure(self))
-        from VOTAScopeMS.vota_sniff import VOTASniffMeasure
-        self.add_measurement(VOTASniffMeasure(self))
+#         from VOTAScopeMS.vota_sniff import VOTASniffMeasure
+#         self.add_measurement(VOTASniffMeasure(self))
 #         from VOTAScopeMS.vota_solenoid_test import VOTASolenoidTestMeasure
 #         self.add_measurement(VOTASolenoidTestMeasure(self))
         # Connect to custom gui
@@ -64,9 +64,9 @@ if __name__ == '__main__':
     app.ui.setWindowTitle("Virtual Odor Tracking Arena")
     
     app.hardware['daq_ai'].settings.connected.update_value(True)
-    app.hardware['arduino_sol'].settings.connected.update_value(True)
-    app.hardware['odor_gen'].settings.connected.update_value(True)
-    app.hardware['arduino_wheel'].settings.connected.update_value(True)
+    #app.hardware['arduino_sol'].settings.connected.update_value(True)
+    #app.hardware['odor_gen'].settings.connected.update_value(True)
+    #app.hardware['arduino_wheel'].settings.connected.update_value(True)
     app.hardware['arduino_water'].settings.connected.update_value(True)
     app.hardware['camera'].settings.connected.update_value(True)
     

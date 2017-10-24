@@ -43,21 +43,21 @@ class VOTALickTrainingMeasure(Measurement):
         self.settings.New('lick_interval', dtype=int, initial=1,ro=False)
         self.settings.New('water_reward', dtype=bool, initial=False,ro=False)
         self.settings.New('total_drops', dtype=int, initial=0,ro=False)
-        
+        self.settings.New('save_movie', dtype=bool, initial=False,ro=False)
+        self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
         #self.buffer = np.zeros(10000, dtype=float)
         
         # Define how often to update display during a run
-        self.display_update_period = 0.1 
+        self.display_update_period = 0.04 
         
         # Convenient reference to the hardware used in the measurement
         self.daq_ai = self.app.hardware['daq_ai']
-        self.arduino_sol =self.app.hardware['arduino_sol']
-        self.odor_gen =self.app.hardware['odor_gen']
-        self.arduino_wheel =self.app.hardware['arduino_wheel']
+
         self.water=self.app.hardware['arduino_water']
+        self.camera=self.app.hardware['camera']
 
     def setup_figure(self):
         """
@@ -70,6 +70,7 @@ class VOTALickTrainingMeasure(Measurement):
         self.ui.start_pushButton.clicked.connect(self.start)
         self.ui.interrupt_pushButton.clicked.connect(self.interrupt)
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
+        self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
         
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
@@ -77,59 +78,44 @@ class VOTALickTrainingMeasure(Measurement):
         
         self.aux_graph_layout=pg.GraphicsLayoutWidget()
         self.ui.aux_plot_groupBox.layout().addWidget(self.aux_graph_layout)
+        
+        self.camera_layout=pg.GraphicsLayoutWidget()
+        self.ui.camera_groupBox.layout().addWidget(self.camera_layout)
 
         # Create PlotItem object (a set of axes)  
-        self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="PID",pen='r')
-        self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="Flowrate (L/min)")
-        self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
-        self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="Position and Speed")
-        self.plot5 = self.graph_layout.addPlot(row=5,col=1,title="Odor Output Target")
-        # Create PlotDataItem object ( a scatter plot on the axes )
-        self.plot_line1 = self.plot1.plot([0])    
-        self.plot_line2 = self.plot2.plot([0])
-        self.plot_line3 = self.plot3.plot([0])
-        self.plot_line4 = self.plot3.plot([0])     
-        self.clean_plot_line = self.plot5.plot([0])  
-        self.odor_plot_line1 = self.plot5.plot([1])  
-        self.odor_plot_line2 = self.plot5.plot([2])  
-        self.odor_plot_line3 = self.plot5.plot([3])
-        self.position_line=self.plot4.plot([0])
-        self.speed_line=self.plot4.plot([1])
-        
-        self.plot_line1.setPen('r')
-        self.plot_line2.setPen('w')
-        self.plot_line3.setPen('b')
-        
-        self.clean_plot_line.setPen('b')
-        self.odor_plot_line1.setPen('r')
-        self.odor_plot_line2.setPen('g')
-        self.odor_plot_line3.setPen('y')
-        
-        
-        self.position_line.setPen('w')
-        self.speed_line.setPen('r')
+     
+        self.plot1 = self.graph_layout.addPlot(row=3,col=1,title="Lick")
 
+        # Create PlotDataItem object ( a scatter plot on the axes )
+        self.lick_plot_0 = self.plot1.plot([0])
+        self.lick_plot_1 = self.plot1.plot([1])     
+        
+        self.lick_plot_0.setPen('y')
+        self.lick_plot_1.setPen('g')
+        
         self.T=np.linspace(0,10,10000)
         self.k=0
-    
+        
+        self.camera_view=pg.ViewBox()
+        self.camera_layout.addItem(self.camera_view)
+        self.camera_image=pg.ImageItem()
+        self.camera_view.addItem(self.camera_image)
+        
+        
     def update_display(self):
         """
         Displays (plots) the numpy array self.buffer. 
         This function runs repeatedly and automatically during the measurement run.
         its update frequency is defined by self.display_update_period
         """
-        self.plot_line1.setData(self.k+self.T,self.buffer[:,0]) 
-        self.plot_line2.setData(self.k+self.T,self.buffer[:,1]) 
-        self.plot_line3.setData(self.k+self.T,self.buffer[:,2])
-        
-        self.clean_plot_line.setData(self.k+self.T,self.buffer[:,7])
-        self.odor_plot_line1.setData(self.k+self.T,self.buffer[:,8]) 
-        self.odor_plot_line2.setData(self.k+self.T,self.buffer[:,9]) 
-        self.odor_plot_line3.setData(self.k+self.T,self.buffer[:,10])
-        
+        self.lick_plot_0.setData(self.k+self.T,self.buffer[:,0]) 
+        self.lick_plot_1.setData(self.k+self.T,self.buffer[:,1]) 
        
-        self.position_line.setData(self.k+self.T,self.buffer[:,3])
-        self.speed_line.setData(self.k+self.T,self.buffer[:,4])
+        if self.settings.movie_on.value():
+            self.camera_image.setImage(self.camera.read())
+            if self.settings.save_movie.value():
+                self.camera.write()
+    
         #print(self.buffer_h5.size)
     
     def run(self):
@@ -138,8 +124,12 @@ class VOTALickTrainingMeasure(Measurement):
         It should not update the graphical interface directly, and should only
         focus on data acquisition.
         """
+        if self.camera.connected.value():
+            self.settings.movie_on.update_value(True)
+        
+        
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
-        self.buffer = np.zeros((10000,num_of_chan+2+2+len(self.arduino_sol.sols)), dtype=float)
+        self.buffer = np.zeros((10000,num_of_chan+2), dtype=float)
         self.buffer[0:self.settings.tdelay.value(),3]=100;
         '''
         initialize position
@@ -225,68 +215,60 @@ class VOTALickTrainingMeasure(Measurement):
                 '''
                 Generate a random odor
                 '''
-                if (i%25==0):
-                    self.odor_gen.random()
+                #no addition
                 
                 
                 
                 '''
-                Read DAQ sensor data(0:PID, 1:flowrate, 2:lick)
+                Read DAQ sensor data(0:lick_left, 1:lick_right, 2:flowmeter)
                 '''
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
-                self.buffer[i,1]=(self.buffer[i,1]-1.245)/8.65 #convert flow rate from 0-1 L/min
-                self.buffer[i,2]=int((5-self.buffer[i,2])/3) #convert lick sensor into 0(no lick) and 1(lick)
-                
-                #ask if the animal licked in this interval
-                lick=bool(self.buffer[i,2])
+                self.buffer[i,2]=(self.buffer[i,1]-1.245)/8.65 #convert flow rate from 0-1 L/min
+                lick_0 = (self.buffer[i,0]<4)
+                lick_1 = (self.buffer[i,1]<4)
+                self.buffer[i,0]=lick_0 #convert lick sensor into 0(no lick) and 1(lick)
+                self.buffer[i,1]=lick_1
+#                 ask if the animal licked in this interval
+
+#                  print(self.buffer[i,0:1])
+                lick = (lick_0 or lick_1)
                 
                 '''
                 Decide whether water will be given, based on the status of reward and lick
                 '''
                 if self.settings.water_reward.value():
                     if lick:
-                        self.water.give_water()
+                        if lick_0:
+                            side = 0
+                        else:
+                            side = 1
+                        self.water.give_water(side)
                         self.settings.water_reward.update_value(False)
                         '''
                         save water given (5:If water given 6:water opened time)
                         '''
-                        self.buffer[i,num_of_chan+2]=1
-                        self.buffer[i,num_of_chan+3]=self.water.settings.open_time.value()
+                        self.buffer[i,num_of_chan+side]=1
+                        #self.buffer[i,num_of_chan+2]=self.water.open_time[side].value()
                         total_drops+=1
                         self.settings.total_drops.update_value(total_drops)
                 
                 '''
                 Read and save Position and Speed at 100Hz(default) (3:position 4:speed)
                 '''
-                if (i%10==0):
-                    speed=self.arduino_wheel.settings.speed.read_from_hardware()
-                    position+=speed
-                    self.buffer[i:(i+10),num_of_chan]=position*0.000779262240246 #convert position into meters
-                    self.buffer[i:(i+10),num_of_chan+1]=speed*0.0779262240246 #convert speed to m/s
-                
+                # to be implemented
                 '''
                 Read odor value from the odor generator, otherwise fill with clean air(default)
                 '''
-                if self.odor_gen.buffer_empty():
-                    odor_value=[100,0,0,0]
-                    odor_disp_value=odor_value
-                else:
-                    odor_value_packet=self.odor_gen.read()
-                    odor_value=odor_value_packet[0]
-                    odor_disp_value=odor_value_packet[1]
-                    
+                #to be implemented
                 '''
                 write odor value to valve
                 '''
-                self.arduino_sol.load(odor_value)
-                self.arduino_sol.write()
-                
+                #to be implemented
                 '''
                 write odor value to display (7:clean air 8:odor1 9:odor2 10:odor3)
                 '''
-                self.buffer[i:(i+step_size),(num_of_chan+4):(num_of_chan+4+len(self.arduino_sol.sols))]=odor_disp_value
-                
+                #to be implemented
                 '''
                 Save hdf5 file
                 '''
@@ -312,12 +294,13 @@ class VOTALickTrainingMeasure(Measurement):
                     # The interrupt button is a polite request to the 
                     # Measurement thread. We must periodically check for
                     # an interrupt request
-                    self.arduino_sol.write_default()
                     self.daq_ai.stop()
-                    self.odor_gen.flush()
                     break
 
         finally:            
             if self.settings['save_h5']:
                 # make sure to close the data file
                 self.h5file.close()
+                
+            if self.camera.connected.value():
+                self.settings.movie_on.update_value(False)                
