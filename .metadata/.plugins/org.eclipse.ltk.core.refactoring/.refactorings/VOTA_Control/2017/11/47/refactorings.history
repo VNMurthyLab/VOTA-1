@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;VOTA_Control/VOTAScopeMS/sol_calibration.ui&apos; to &apos;sol_calibration_plot.ui&apos;" description="Rename resource &apos;sol_calibration.ui&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="VOTAScopeMS/sol_calibration.ui" name="sol_calibration_plot.ui" stamp="1511298535372" updateReferences="true"/>
+</session>

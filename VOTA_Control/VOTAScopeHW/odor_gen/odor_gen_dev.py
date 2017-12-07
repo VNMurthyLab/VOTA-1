@@ -14,7 +14,7 @@ class OdorGenDev(object):
     classdocs
     '''
 
-    def __init__(self,num_of_sol=4,buffer_size=1,queue_size=100000,preload_level=40):
+    def __init__(self,num_of_sol=8,buffer_size=1,queue_size=100000,preload_level=40):
         '''
         Constructor
         '''

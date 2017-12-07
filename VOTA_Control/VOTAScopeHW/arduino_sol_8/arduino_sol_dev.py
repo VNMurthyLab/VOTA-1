@@ -13,8 +13,8 @@ class ArduinoSolDev(object):
     '''
     classdocs
     '''
-
-    def __init__(self, port='COM3',baud_rate=250000,fname='D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeHW\\arduino_sol\\sol_calib.h5'):
+    
+    def __init__(self, port='COM3',baud_rate=500000):
         '''
         Constructor
         '''
@@ -22,19 +22,12 @@ class ArduinoSolDev(object):
         self.baud_rate=baud_rate
         self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
         #self.open()
-        self.calib=np.zeros((101,4),dtype=int)
-        self.load_calib(fname)
+        self.chan_id = [b'\x02',b'\x01',b'\x08',b'\x04',b'\x20',b'\x10',b'\x80',b'\x40']
         
-    def write(self,sol_level=[0,0,0,0]):
-        output=bytes('s','utf-8');
-        for i in range(len(sol_level)):
-            output=output+int(self.calib[sol_level[i],i]).to_bytes(2,'big')
-        self.ser.write(output)
-        
-    def write_raw(self,sol_level=[0,0,0,0]):
-        output=bytes('s','utf-8');
-        for i in range(len(sol_level)):
-            output=output+sol_level[i].to_bytes(2,'big')
+    def write(self,sol,level):
+        output=bytes('w','utf-8');
+        output=output + self.chan_id[sol]
+        output=output+level.to_bytes(1,'big')
         self.ser.write(output)
 
     def read(self):
@@ -51,11 +44,6 @@ class ArduinoSolDev(object):
         self.close()
         del self.ser
     
-    def load_calib(self,fname):
-        f=h5.File(fname,'r')
-        dset=f['calib']
-        self.calib[:]=dset[:].transpose()
-        f.close()
 
 if __name__ == '__main__':
     sol=ArduinoSolDev()
@@ -67,5 +55,3 @@ if __name__ == '__main__':
 #     print(sol.read(),i)
 #     
 #     print(b-a)
-    sol.load_calib('sol_calib.h5')
-    print(sol.calib)

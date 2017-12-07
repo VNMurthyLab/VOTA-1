@@ -4,6 +4,9 @@ VOTAScopeHW.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\__init__.py
 VOTAScopeHW.arduino_sol.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\__init__.py
 VOTAScopeHW.arduino_sol.arduino_sol_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_dev.py
 VOTAScopeHW.arduino_sol.arduino_sol_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_hw.py
+VOTAScopeHW.arduino_sol_8.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol_8\__init__.py
+VOTAScopeHW.arduino_sol_8.arduino_sol_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol_8\arduino_sol_dev.py
+VOTAScopeHW.arduino_sol_8.arduino_sol_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol_8\arduino_sol_hw.py
 VOTAScopeHW.arduino_water.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_water\__init__.py
 VOTAScopeHW.arduino_water.arduino_water_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_water\arduino_water_dev.py
 VOTAScopeHW.arduino_water.arduino_water_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_water\arduino_water_hw.py
@@ -13,6 +16,7 @@ VOTAScopeHW.arduino_wheel.arduino_wheel_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\
 VOTAScopeHW.camera.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\camera\__init__.py
 VOTAScopeHW.camera.camera_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\camera\camera_dev.py
 VOTAScopeHW.camera.camera_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\camera\camera_hw.py
+VOTAScopeHW.camera.camera_test|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\camera\camera_test.py
 VOTAScopeHW.daq_ai.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\__init__.py
 VOTAScopeHW.daq_ai.daq_ai_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_dev.py
 VOTAScopeHW.daq_ai.daq_ai_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\daq_ai_hw.py
@@ -21,9 +25,7 @@ VOTAScopeHW.odor_gen.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\__in
 VOTAScopeHW.odor_gen.odor_gen_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_dev.py
 VOTAScopeHW.odor_gen.odor_gen_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_hw.py
 VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
+VOTAScopeMS.block_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\block_training.py
 VOTAScopeMS.lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\lick_training.py
+VOTAScopeMS.sol_calibration|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\sol_calibration.py
 VOTAScopeMS.test_camera|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\test_camera.py
-VOTAScopeMS.vota_calibration|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_calibration.py
-VOTAScopeMS.vota_lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_lick_training.py
-VOTAScopeMS.vota_sniff|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_sniff.py
-VOTAScopeMS.vota_solenoid_test|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\vota_solenoid_test.py

@@ -18,7 +18,7 @@ class OdorGenHW(HardwareComponent):
     
     name='odor_gen'
 
-    def setup(self,num_of_sol=4,buffer_size=1,queue_size=10000):
+    def setup(self,num_of_sol=8,buffer_size=1,queue_size=10000):
         '''
         add settings for analog input event
         '''
@@ -32,12 +32,11 @@ class OdorGenHW(HardwareComponent):
         self.settings.New(name='vmin',initial=0,dtype=int,ro=False)
         self.settings.New(name='vmax',initial=100,dtype=int,ro=False)
         
-        self.settings.New(name='selected_sol',initial=1,dtype=int,ro=False)
+        self.settings.New(name='selected_sol',initial=0,dtype=int,ro=False)
         self.settings.New(name='on_chance',initial=0,dtype=float,ro=False)
         self.settings.New(name='clean_factor',initial=1.0,dtype=float,ro=False)
         self.settings.New(name='clean_delay',initial=30,dtype=int,ro=False)
 
-        
 
         
                 
@@ -74,7 +73,8 @@ class OdorGenHW(HardwareComponent):
         
     def make_ladder_speed(self,vmini,vmaxi):
         output=self._dev.gen_sqr_ladder(vmini,vmaxi,dc=0.5)
-        #self._dev.set_sol(clean,0)
+        print(output)
+        self._dev.set_sol(0,0)
         self._dev.set_sol(output,output,self.settings.selected_sol.value())
         self._dev.load_all()
     

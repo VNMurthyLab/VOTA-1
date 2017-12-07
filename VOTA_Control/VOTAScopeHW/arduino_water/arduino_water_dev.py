@@ -75,4 +75,4 @@ if __name__ == '__main__':
     time.sleep(2)
     for i in range(100):
         time.sleep(0.1)
-        water.drop_water(1,25)
+        water.drop_water(0,45)

@@ -21,7 +21,7 @@ class VOTAScopeApp(BaseMicroscopeApp):
         print("Create Hardware objects")
         from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
         self.add_hardware(DAQaiHW(self))
-        from VOTAScopeHW.arduino_sol.arduino_sol_hw import ArduinoSolHW
+        from VOTAScopeHW.arduino_sol_8.arduino_sol_hw import ArduinoSolHW
         self.add_hardware(ArduinoSolHW(self))
         from VOTAScopeHW.odor_gen.odor_gen_hw import OdorGenHW
         self.add_hardware(OdorGenHW(self))
@@ -34,10 +34,14 @@ class VOTAScopeApp(BaseMicroscopeApp):
         
         #Add measurement components
         print("Create Measurement objects")
-        #from VOTAScopeMS.vota_calibration import VOTACalibrationMeasure
-        #self.add_measurement(VOTACalibrationMeasure(self))
-        from VOTAScopeMS.lick_training import VOTALickTrainingMeasure
-        self.add_measurement(VOTALickTrainingMeasure(self))
+#         from VOTAScopeMS.sol_calibration import VOTASolCalibrationMeasure
+#         self.add_measurement(VOTASolCalibrationMeasure(self))
+#         from VOTAScopeMS.lick_training import VOTALickTrainingMeasure
+#         self.add_measurement(VOTALickTrainingMeasure(self))
+        from VOTAScopeMS.block_training import VOTABlockTrainingMeasure
+        self.add_measurement(VOTABlockTrainingMeasure(self))
+#         from VOTAScopeMS.vota_calibration import VOTACalibrationMeasure
+#         self.add_measurement(VOTACalibrationMeasure(self))
 #         from VOTAScopeMS.vota_sniff import VOTASniffMeasure
 #         self.add_measurement(VOTASniffMeasure(self))
 #         from VOTAScopeMS.vota_solenoid_test import VOTASolenoidTestMeasure
@@ -64,8 +68,8 @@ if __name__ == '__main__':
     app.ui.setWindowTitle("Virtual Odor Tracking Arena")
     
     app.hardware['daq_ai'].settings.connected.update_value(True)
-    #app.hardware['arduino_sol'].settings.connected.update_value(True)
-    #app.hardware['odor_gen'].settings.connected.update_value(True)
+    app.hardware['arduino_sol'].settings.connected.update_value(True)
+    app.hardware['odor_gen'].settings.connected.update_value(True)
     #app.hardware['arduino_wheel'].settings.connected.update_value(True)
     app.hardware['arduino_water'].settings.connected.update_value(True)
     app.hardware['camera'].settings.connected.update_value(True)

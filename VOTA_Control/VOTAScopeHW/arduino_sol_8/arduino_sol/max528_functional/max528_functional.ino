@@ -18,6 +18,11 @@ void initDAC() {
   // Data byte: all outs fully buffered.
   SPI.transfer(0xFF);
   digitalWrite(csPin, HIGH); 
+
+  digitalWrite(csPin, LOW); 
+  SPI.transfer(0xFF);
+  SPI.transfer(0x00); 
+  digitalWrite(csPin, HIGH); 
 }
 
 
@@ -32,7 +37,7 @@ void writeDAC (byte channel, byte x) {
 
 void setup() {
   //setup serial communication
-  Serial.begin(250000);
+  Serial.begin(500000);
   Serial.flush();
   //set CS pin to output
   pinMode(csPin, OUTPUT);
@@ -55,7 +60,6 @@ void loop() {
       mark = 'a';
       Serial.readBytes(&incomingbytes[0],2);
       writeDAC(incomingbytes[0],incomingbytes[1]);
-      Serial.println(mark);
     }
     Serial.flush();
 }

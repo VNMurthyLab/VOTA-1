@@ -30,8 +30,8 @@ class ArduinoWaterHW(HardwareComponent):
         self.settings.New(name='manual_drop_1',initial=False,dtype=bool,ro=False)
         
         self.open_time=[]
-        self.open_time.append(self.settings.New(name='open_time_0',initial=40,dtype=int,ro=False,vmin=1,vmax=1000))
-        self.open_time.append(self.settings.New(name='open_time_1',initial=25,dtype=int,ro=False,vmin=1,vmax=1000))
+        self.open_time.append(self.settings.New(name='open_time_0',initial=45,dtype=int,ro=False,vmin=1,vmax=1000))
+        self.open_time.append(self.settings.New(name='open_time_1',initial=38,dtype=int,ro=False,vmin=1,vmax=1000))
 
     def give_water_manual_0(self,temp=False):
         self.give_water(side=0)
