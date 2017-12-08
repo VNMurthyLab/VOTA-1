@@ -12,13 +12,61 @@ import numpy as np
 import time
 import os
 from random import randint,random
+from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
 
+class OdorGen(object):
+    
+    def __init__(self,nchan = 8, T = 3000):
+        self.tick = 0
+        self.nchan = nchan
+        self.T = T
+        self.odor_buffer = np.zeros((self.nchan,self.T))
+        self.odor_buffer_disp = np.zeros((self.nchan,self.T))
+        self.on = False
+    
+    def step(self):
+        if self.on:
+            if self.tick < self.T -1:
+                self.tick += 1 
+                return self.odor_buffer[:,self.tick].squeeze(),self.odor_buffer_disp[:,self.tick].squeeze()
+            else:
+                self.on = False
+                self.odor_buffer[:] = 0
+                return np.zeros((self.nchan,)),np.zeros((self.nchan,))
+        else:
+            return np.zeros((self.nchan,)),np.zeros((self.nchan,))
+            
+    
+    def new_trial(self, channel = 4, level = 30, Tpulse = 50, interval = 2000):
+        self.tick = 0
+        base_intervals = np.random.exponential(scale = interval, size = (50,))
+        base_onsets = base_intervals.cumsum().astype(int)
+        
+        full_length = int(base_intervals.sum()+2000)
+        spike_trace = np.zeros((full_length,))
+        spike_trace[base_onsets] = 1
+        spike_trace = spike_trace[0:self.T]
+        y = np.ones((Tpulse,)) * level
+        output_trace_disp = np.convolve(spike_trace,y)[0:self.T]
+        y[0:3] = 100
+        y[3:5] = 90
+        y[5:10] = 80
+        output_trace = np.convolve(spike_trace,y)[0:self.T]
+        output_trace =output_trace.clip(0,100)
+        clean_trace = 100 - output_trace_disp
+        #self.odor_buffer[0,:] = clean_trace
+        self.odor_buffer[channel,:] = output_trace
+        self.odor_buffer_disp[channel,:] = output_trace_disp
+        self.on = True
+        
+        
+    
 class TrainingTask(object):
     '''
     task object control the state of the task, and also generate each task
     '''
     
-    def __init__(self, water_hw, block = 10, delay = 2000, go = 5000, refract = 2000, punish = 5000):
+    def __init__(self, water_hw, odor_gen, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000):
         '''
         tick is for measuring time
         '''
@@ -30,11 +78,17 @@ class TrainingTask(object):
         self.trial = 0
         self.block = block
         self.water = water_hw
-        self.water_available = True
+        self.odor_gen = odor_gen
+        
+        self.water_available = False
         self.duration = [delay,go,refract,punish]
+        self.channel = [0,0]
+        self.level = [0,0]
+        self.Tpulse = [100,100]
+        self.interval = [500,500]
         
         self.state_dict = {'delay':0,'go':1,'refract':2,'punish':3}
-        self.state = 0
+        self.state = 2
     
     def step(self,lick = 0):
         self.tick += 1
@@ -50,9 +104,6 @@ class TrainingTask(object):
     def set_state(self,state_name):
         self.tick = 0
         self.state = self.state_dict[state_name]
-        print(state_name)
-        print(self.side)
-        
         '''
         if beginning a new trial, check to see if switching side is needed
         '''
@@ -64,7 +115,10 @@ class TrainingTask(object):
             if self.trial >= self.block:
                 self.side = 3 - self.side
                 self.trial = 0
-            
+    
+       
+            side = self.side - 1
+            self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
             '''
             deliver odor and tone :to be implemented
             '''
@@ -73,9 +127,14 @@ class TrainingTask(object):
             '''
             deliver tone : to be implemented
             '''
-            pass
-                
-            
+            pass   
+        
+    def set_stimuli(self,side = 1, channel = 4, level = 30, Tpulse = 50, interval = 2000):
+        side = side - 1
+        self.channel[side] = channel
+        self.level[side] = level
+        self.Tpulse[side] = Tpulse
+        self.interval[side] = interval
         
     def delay_step(self, lick = 0):
         if lick > 0:
@@ -137,7 +196,7 @@ class VOTABlockTrainingMeasure(Measurement):
         # This file can be edited graphically with Qt Creator
         # sibling_path function allows python to find a file in the same folder
         # as this python module
-        self.ui_filename = sibling_path(__file__, "lick_training_plot.ui")
+        self.ui_filename = sibling_path(__file__, "block_training_plot.ui")
         
         #Load ui file and convert it to a live QWidget of the user interface
         self.ui = load_qt_ui_file(self.ui_filename)
@@ -146,18 +205,29 @@ class VOTABlockTrainingMeasure(Measurement):
         # This setting allows the option to save data to an h5 data file during a run
         # All settings are automatically added to the Microscope user interface
         self.settings.New('save_h5', dtype=bool, initial=False)
-        self.settings.New('tdelay', dtype=int, initial=0,ro=True)
-        self.settings.New('trial_time',dtype=int,initial=10,ro=False)
-        self.settings.New('task_interval', dtype=int, initial=1,ro=False)
-        self.settings.New('punishment_interval', dtype=int, initial=1,ro=False)
-        self.settings.New('reward_delay', dtype=int, initial=1,ro=False)
-        self.settings.New('reward_1', dtype=bool, initial=False)
-        self.settings.New('reward_2', dtype=bool, initial=False)
+        self.settings.New('train',dtype = bool, initial = False, ro = False)
         self.settings.New('block_number', dtype = int, initial = 10)
-        self.settings.New('water_reward', dtype=bool, initial=False,ro=False)
-        self.settings.New('total_drops', dtype=int, initial=0,ro=False)
         self.settings.New('save_movie', dtype=bool, initial=False,ro=False)
         self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
+        
+        exp_settings = []
+        
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 2000))
+        exp_settings.append(self.settings.New('go', dtype = int, initial = 2000)) 
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 1000)) 
+        exp_settings.append(self.settings.New('punish', dtype = int, initial = 5000)) 
+        
+        
+        exp_settings.append(self.settings.New('channel1', dtype = int, initial = 2)) 
+        exp_settings.append(self.settings.New('channel2', dtype = int, initial = 2)) 
+        exp_settings.append(self.settings.New('level1', dtype = int, initial = 100, vmin = 0, vmax = 100))
+        exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
+        exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
+        exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 400))
+        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1000))
+
+        self.exp_settings = exp_settings
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -184,6 +254,11 @@ class VOTABlockTrainingMeasure(Measurement):
         self.ui.interrupt_pushButton.clicked.connect(self.interrupt)
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
         self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
+        for exp_setting in self.exp_settings:
+            exp_widget_name=exp_setting.name+'_doubleSpinBox'
+            #print(exp_widget_name)
+            exp_widget=self.ui.findChild(QDoubleSpinBox,exp_widget_name)
+            exp_setting.connect_to_widget(exp_widget)
         
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
@@ -199,11 +274,15 @@ class VOTABlockTrainingMeasure(Measurement):
      
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="Lick")
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="breathing")
+        self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="odor")
 
         # Create PlotDataItem object ( a scatter plot on the axes )
         self.breathing_plot = self.plot2.plot([0])
         self.lick_plot_0 = self.plot1.plot([0])
-        self.lick_plot_1 = self.plot1.plot([1])     
+        self.lick_plot_1 = self.plot1.plot([1])
+        self.odor_plot = []
+        for i in range(8):
+            self.odor_plot.append(self.plot3.plot([i]))
         
         self.lick_plot_0.setPen('y')
         self.lick_plot_1.setPen('g')
@@ -226,6 +305,9 @@ class VOTABlockTrainingMeasure(Measurement):
         self.lick_plot_0.setData(self.k+self.T,self.buffer[:,1]) 
         self.lick_plot_1.setData(self.k+self.T,self.buffer[:,2]) 
         self.breathing_plot.setData(self.k+self.T,self.buffer[:,0]) 
+        
+        for i in range(8):
+            self.odor_plot[i].setData(self.k + self.T, self.buffer[:,i+4])
        
         if self.settings.movie_on.value():
             self.camera_image.setImage(self.camera.read())
@@ -245,18 +327,12 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
-        self.buffer = np.zeros((10000,num_of_chan+2), dtype=float)
-        self.buffer[0:self.settings.tdelay.value(),3]=100;
+        self.buffer = np.zeros((10000,num_of_chan+10), dtype=float)
         '''
         initialize position
         '''
         position = 0
-        '''
-        initialize number of water drops given
-        '''
-        total_drops=0
-        self.settings.total_drops.update_value(total_drops)
-        
+
         
         '''
         Decide whether to create HDF5 file or not
@@ -296,9 +372,25 @@ class VOTABlockTrainingMeasure(Measurement):
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
         '''
-        create task object
+        create odor generator and task object
         '''
-        task = TrainingTask(self.water)
+        if self.settings.train.value():
+            odorgen = OdorGen(T = self.settings.delay.value())
+            task = TrainingTask(water_hw = self.water, odor_gen = odorgen,
+                                delay = self.settings.delay.value(),
+                                go = self.settings.go.value(),
+                                refract = self.settings.refract.value(),
+                                punish = self.settings.punish.value())
+            task.set_stimuli(side = 1,
+                             channel = self.settings.channel1.value(),
+                             level = self.settings.level1.value(),
+                             Tpulse = self.settings.Tpulse1.value(),
+                             interval = self.settings.interval1.value())
+            task.set_stimuli(side = 2,
+                             channel = self.settings.channel2.value(),
+                             level = self.settings.level2.value(),
+                             Tpulse = self.settings.Tpulse2.value(),
+                             interval = self.settings.interval2.value())
         '''
         start actual protocol
         '''
@@ -310,7 +402,6 @@ class VOTABlockTrainingMeasure(Measurement):
             j = 0 #counter tick for saving hdf5 file
             self.k=0 #number of seconds saved
             
-            step_size=self.daq_ai.settings.buffer_size.value()
            
             '''
             Start DAQ, Default at 1kHz
@@ -324,7 +415,7 @@ class VOTABlockTrainingMeasure(Measurement):
             while not self.interrupt_measurement_called:
                 i %= self.buffer.shape[0]
                 if self.settings['save_h5']:
-                    if j>(self.buffer_h5.shape[0]-step_size):
+                    if j>(self.buffer_h5.shape[0]-1):
                         self.buffer_h5.resize((self.buffer_h5.shape[0]+self.buffer.shape[0],self.buffer.shape[1]))
                         self.k +=10
                 
@@ -338,7 +429,7 @@ class VOTABlockTrainingMeasure(Measurement):
                 Read DAQ sensor data(0:lick_left, 1:lick_right, 2:flowmeter)
                 '''
                 # Fills the buffer with sine wave readings from func_gen Hardware
-                self.buffer[i:(i+step_size),0:num_of_chan] = self.daq_ai.read_data()
+                self.buffer[i,0:num_of_chan] = self.daq_ai.read_data()
 
                 lick_0 = (self.buffer[i,1]<4)
                 lick_1 = (self.buffer[i,2]<4)
@@ -360,7 +451,11 @@ class VOTABlockTrainingMeasure(Measurement):
                 '''
                 step through task
                 '''
-                task.step(lick)
+                if self.settings.train.value():
+                    task.step(lick)
+                    odor, odor_disp = odorgen.step()
+                    self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
+                    self.arduino_sol.load(odor)
                 '''
                 Read and save Position and Speed at 100Hz(default) (3:position 4:speed)
                 '''
@@ -382,7 +477,7 @@ class VOTABlockTrainingMeasure(Measurement):
                 '''
                 if self.settings['save_h5']:
                     # if we are saving data to disk, copy data to H5 dataset
-                    self.buffer_h5[j:(j+step_size),:] = self.buffer[i:(i+step_size),:]
+                    self.buffer_h5[j,:] = self.buffer[i,:]
                     # flush H5
                     self.h5file.flush()
             
@@ -391,8 +486,8 @@ class VOTABlockTrainingMeasure(Measurement):
                 # We will use our sampling_period settings to define time
                 #time.sleep(self.settings['sampling_period'])
                 
-                i += step_size
-                j += step_size
+                i += 1
+                j += 1
                
                 
                 if self.interrupt_measurement_called:

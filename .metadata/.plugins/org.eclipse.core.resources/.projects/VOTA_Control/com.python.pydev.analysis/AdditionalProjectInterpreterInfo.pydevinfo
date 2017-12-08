@@ -94,7 +94,7 @@ VOTAScopeHW.arduino_wheel.arduino_wheel_dev|1502836217037654000|D:\Hao\VOTA\VOTA
 24=ArduinoWaterDev
 -- END DICTIONARY
 -- START TREE 1
-14
+15
 a|1|a!11@
 ai|6|ai!19@ai!27@ai!35@ai!43@ai!51@ai!59@
 app|1|app!67@
@@ -107,11 +107,12 @@ gra|2|gray!123@gray!131@
 odo|3|OdorGenHW!33@odor_gen!147@OdorGenDev!145@
 sol|3|sol!11@sol!83@sol!91@
 tas|1|task!139@
+tra|0|
 vot|3|VOTAScopeApp!65@VOTASolCalibrationMeasure!153@VOTALickTrainingMeasure!161@
 wat|1|water!107@
 -- END TREE
 -- START TREE 2
-110
+116
 T|2|T!21&163@T!22&155@
 __d|4|__del__!23&82@__del__!23&90@__del__!24&106@__del__!25&10@
 __i|7|__init__!26&138@__init__!27&146@__init__!23&82@__init__!25&10@__init__!24&106@__init__!23&90@__init__!28&114@
@@ -166,20 +167,25 @@ gra|2|graph_layout!22&155@graph_layout!21&163@
 h5_|2|h5_group!41&163@h5_group!44&155@
 h5f|2|h5file!41&163@h5file!44&155@
 hel|0|
+int|0|
 is_|1|is_empty!27&146@
 k|4|k!21&163@k!41&163@k!22&155@k!44&155@
 las|2|last!39&11@last!54&11@
+lev|0|
 lic|4|lick_plot_0!21&163@lick_plot_1!22&155@lick_plot_0!22&155@lick_plot_1!21&163@
 loa|5|load_calib!23&82@load_all!27&146@load!49&26@load_calib!49&26@load!49&18@
 lq_|0|
 mak|3|make_ladder_clean!45&34@make_ladder!45&34@make_ladder_speed!45&34@
 max|1|max_tick!42&147@
 nam|11|name!50&59@name!51&75@name!52&99@name!55&163@name!49&27@name!56&155@name!49&19@name!48&51@name!45&35@name!50&43@name!57&67@
+nch|0|
+new|0|
 ng_|0|
 no_|0|
 num|2|num_of_sol!42&147@num_of_chan!43&139@
 o|1|o!38&107@
 odo|0|
+on|0|
 ope|8|open_file!48&50@open!23&90@open!23&82@open!25&10@open_file!28&114@open_time!58&99@open!28&114@open!24&106@
 out|1|out!53&115@
 p|0|
@@ -213,6 +219,7 @@ tar|0|
 tas|0|
 tic|1|tick!42&147@
 tim|0|
+tpu|0|
 tri|1|triggered_stimulus!45&34@
 ui|2|ui!37&155@ui!36&163@
 ui_|2|ui_filename!37&155@ui_filename!36&163@
