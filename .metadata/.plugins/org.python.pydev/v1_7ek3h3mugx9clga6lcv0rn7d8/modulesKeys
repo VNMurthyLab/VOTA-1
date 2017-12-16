@@ -9066,6 +9066,9 @@ shelve|D:\Anaconda3\lib\shelve.py
 shlex|D:\Anaconda3\lib\shlex.py
 shutil|D:\Anaconda3\lib\shutil.py
 signal|D:\Anaconda3\lib\signal.py
+simpleaudio.__init__|D:\Anaconda3\lib\site-packages\simpleaudio\__init__.py
+simpleaudio.functionchecks|D:\Anaconda3\lib\site-packages\simpleaudio\functionchecks.py
+simpleaudio.shiny|D:\Anaconda3\lib\site-packages\simpleaudio\shiny.py
 simplegeneric|D:\Anaconda3\lib\site-packages\simplegeneric.py
 singledispatch|D:\Anaconda3\lib\site-packages\singledispatch.py
 singledispatch_helpers|D:\Anaconda3\lib\site-packages\singledispatch_helpers.py

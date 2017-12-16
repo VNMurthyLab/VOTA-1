@@ -1,0 +1,5 @@
+import winsound
+
+#winsound.PlaySound('beep-07.wav', winsound.SND_FILENAME)
+
+winsound.Beep(2000,10)

@@ -1,0 +1,16 @@
+INSTUPVOTAScopeHW.sound.sound_hw
+D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\sound\sound_hw.py
+INFOS:&&1|1|2|0&&3|3|2|1&&2|4|2|1&&2|5|2|1&&3|6|2|7&&3|8|2|7&&3|9|2|7&&2|10|2|1&&2|11|2|1&&2|12|2|1&&2|13|2|1
+disconnect=13
+wave_start=6
+correct=11
+start=10
+SoundHW=1
+wrong=12
+SoundHW.connect=7
+wave_correct=8
+wave_wrong=9
+name=3
+setup=4
+VOTAScopeHW.sound.sound_hw=2
+connect=5

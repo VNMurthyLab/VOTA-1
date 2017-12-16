@@ -24,6 +24,8 @@ VOTAScopeHW.daq_ai.test_pydaqmx|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\test
 VOTAScopeHW.odor_gen.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\__init__.py
 VOTAScopeHW.odor_gen.odor_gen_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_dev.py
 VOTAScopeHW.odor_gen.odor_gen_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_hw.py
+VOTAScopeHW.sound.sound_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\sound\sound_hw.py
+VOTAScopeHW.sound.test_sound|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\sound\test_sound.py
 VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
 VOTAScopeMS.block_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\block_training.py
 VOTAScopeMS.lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\lick_training.py

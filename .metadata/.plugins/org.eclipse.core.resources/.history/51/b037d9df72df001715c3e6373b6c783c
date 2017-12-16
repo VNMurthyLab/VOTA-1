@@ -1,0 +1,41 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+
+from ScopeFoundry import HardwareComponent
+import winsound
+
+class SoundHW(HardwareComponent):
+    '''
+    Hardware Component Class for receiving AI input for breathing, licking etc
+    '''
+    
+    name='sound'
+
+    def setup(self):
+        pass
+        
+                
+    def connect(self):
+        pass
+        
+    def start(self):
+        winsound.PlaySound('beep_start.wav', winsound.SND_FILENAME)
+        
+    def correct(self):
+        winsound.PlaySound('beep_correct.wav', winsound.SND_FILENAME)
+        
+    def wrong(self):
+        winsound.PlaySound('beep_wrong.wav', winsound.SND_FILENAME)
+        
+    def disconnect(self):
+        try:
+            pass
+            
+        except AttributeError:
+            pass
+        
+if __name__ == '__main__':
+    winsound.PlaySound('beep_start.wav', winsound.SND_FILENAME)

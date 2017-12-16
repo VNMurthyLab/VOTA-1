@@ -1,0 +1,3 @@
+import wave
+
+wave.open('beep_start.wav','rb')

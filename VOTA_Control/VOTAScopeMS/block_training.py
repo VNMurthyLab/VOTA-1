@@ -14,17 +14,62 @@ import os
 from random import randint,random
 from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
 
+class StatRec(object):
+    '''
+    Record mouse performance such as correct vs noncorrect response\
+    '''
+    
+    def __init__(self):
+        self.buffer = np.zeros((9,2000))
+        self.state_dict = {'success': 1, 'failure':2, 'early':3, 'idle':4}
+        self.trial = 0
+        self.up_to_date = True
+    
+    def increment(self,state_name):
+        '''
+        Called by task object, called whenever mice make a decision
+        '''
+        state = self.state_dict[state_name]
+        self.up_to_date =False
+        self.trial += 1
+        i = self.trial
+        self.buffer[:,i] = self.buffer[:,i - 1]
+        self.buffer[0,i] = self.trial
+        self.buffer[state,i] += 1
+        self.buffer[5:9, i] = 100.0 * self.buffer[1:5,i] / self.trial
+        
+    def write(self):
+        '''
+        output to a buffer
+        '''
+        self.up_to_date = True
+        return self.buffer, self.trial
+    
+    def updated(self):
+        '''
+        check to see if the last output was up to date
+        '''
+        return self.up_to_date
+
 class OdorGen(object):
+    '''
+    Object generate a time series of odor
+    '''
     
     def __init__(self,nchan = 8, T = 3000):
-        self.tick = 0
-        self.nchan = nchan
-        self.T = T
+        self.tick = 0 # millisecond time counter
+        self.nchan = nchan #number of channels
+        self.T = T # size of the output time series
         self.odor_buffer = np.zeros((self.nchan,self.T))
         self.odor_buffer_disp = np.zeros((self.nchan,self.T))
         self.on = False
     
     def step(self):
+        '''
+        output the next odor level in the time series
+        '''
+        default_output = np.zeros((self.nchan,))
+        default_output[4] = 100
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -32,29 +77,46 @@ class OdorGen(object):
             else:
                 self.on = False
                 self.odor_buffer[:] = 0
-                return np.zeros((self.nchan,)),np.zeros((self.nchan,))
+                return default_output,default_output
         else:
-            return np.zeros((self.nchan,)),np.zeros((self.nchan,))
+            return default_output,default_output
             
     
     def new_trial(self, channel = 4, level = 30, Tpulse = 50, interval = 2000):
-        self.tick = 0
-        base_intervals = np.random.exponential(scale = interval, size = (50,))
+        '''
+        generate new time series
+        called from a task
+        '''
+        self.tick = 0 #reset tick
+        '''
+        Exponential Process Generation
+        '''
+        base_intervals = np.random.exponential(scale = interval, size = (50,)) #pulses are exponentially distributed
         base_onsets = base_intervals.cumsum().astype(int)
         
+        '''
+        Spike generation
+        '''
         full_length = int(base_intervals.sum()+2000)
         spike_trace = np.zeros((full_length,))
         spike_trace[base_onsets] = 1
         spike_trace = spike_trace[0:self.T]
+        '''
+        Covolution with a kernel for valve control
+        '''
         y = np.ones((Tpulse,)) * level
-        output_trace_disp = np.convolve(spike_trace,y)[0:self.T]
+        output_trace_disp = np.convolve(spike_trace,y)[0:self.T] 
         y[0:3] = 100
         y[3:5] = 90
         y[5:10] = 80
         output_trace = np.convolve(spike_trace,y)[0:self.T]
-        output_trace =output_trace.clip(0,100)
+        output_trace =output_trace.clip(0,100) #amke sure output is with in range
+        '''
+        output to both solenoid valve buffer and display
+        '''
         clean_trace = 100 - output_trace_disp
-        #self.odor_buffer[0,:] = clean_trace
+        clean_trace = clean_trace.clip(0,100)
+        self.odor_buffer[4,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
         self.odor_buffer_disp[channel,:] = output_trace_disp
         self.on = True
@@ -66,7 +128,7 @@ class TrainingTask(object):
     task object control the state of the task, and also generate each task
     '''
     
-    def __init__(self, water_hw, odor_gen, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000):
+    def __init__(self, water_hw, odor_gen, sound_hw, stat_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000):
         '''
         tick is for measuring time
         '''
@@ -79,6 +141,11 @@ class TrainingTask(object):
         self.block = block
         self.water = water_hw
         self.odor_gen = odor_gen
+        self.sound = sound_hw
+        self.stat_rec = stat_rec
+        self.random_lq = random_lq
+        self.state_lqs = state_lqs
+        self.reward_lqs = reward_lqs
         
         self.water_available = False
         self.duration = [delay,go,refract,punish]
@@ -104,20 +171,28 @@ class TrainingTask(object):
     def set_state(self,state_name):
         self.tick = 0
         self.state = self.state_dict[state_name]
+        for state_lq in self.state_lqs:
+            state_lq.update_value(False)
+        self.state_lqs[self.state].update_value(True)
         '''
         if beginning a new trial, check to see if switching side is needed
         '''
         if self.state == self.state_dict['delay']:
-            self.trial += 1
             '''
             switch side for if the number of trials reach the block number
             '''
-            if self.trial >= self.block:
-                self.side = 3 - self.side
-                self.trial = 0
-    
-       
+            if self.random_lq.value():
+                self.side = np.random.randint(1,3)
+            else:
+                if self.trial >= self.block:
+                    self.side = 3 - self.side
+                    self.trial = 0
+                
             side = self.side - 1
+            for reward_lq in self.reward_lqs:
+                reward_lq.update_value(False)
+            self.reward_lqs[side].update_value(True)
+            
             self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
             '''
             deliver odor and tone :to be implemented
@@ -139,12 +214,15 @@ class TrainingTask(object):
     def delay_step(self, lick = 0):
         if lick > 0:
             self.tick = 0
+            self.stat_rec.increment('early')
+            self.sound.wrong()
             self.set_state('punish')
         
         my_state = self.state_dict['delay']
         if self.tick > self.duration[my_state]:
             self.tick = 0
             self.water_available = True
+            self.sound.start()
             self.set_state('go')
             
     def go_step(self,lick = 0): 
@@ -152,19 +230,28 @@ class TrainingTask(object):
             if self.water_available:
                 self.water.give_water(self.side - 1)
                 self.water_available = False
+                self.sound.correct()
+                self.stat_rec.increment('success')
+                if not self.random_lq.value():
+                    self.trial += 1
+                self.set_state('refract')
                 
         if lick > 0 and lick != self.side:
+            self.sound.wrong()
             self.set_state('punish')
+            self.stat_rec.increment('failure')
                 
         my_state = self.state_dict['go']
         if self.tick > self.duration[my_state]:
             self.set_state('refract')
+            self.stat_rec.increment('idle')
             
     def refract_step(self, lick = 0):
         if lick == self.side:
             self.set_state('refract')
         
         if lick > 0 and lick != self.side:
+            self.sound.wrong()
             self.set_state('punish')
             
         my_state = self.state_dict['refract']
@@ -209,25 +296,67 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('block_number', dtype = int, initial = 10)
         self.settings.New('save_movie', dtype=bool, initial=False,ro=False)
         self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
-        
+        self.settings.New('random',dtype=bool, initial=False, ro= False)
+        '''
+        setting up experimental setting parameters for task
+        '''
         exp_settings = []
         
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 2000))
-        exp_settings.append(self.settings.New('go', dtype = int, initial = 2000)) 
-        exp_settings.append(self.settings.New('refract', dtype = int, initial = 1000)) 
-        exp_settings.append(self.settings.New('punish', dtype = int, initial = 5000)) 
+        
+        exp_settings.append(self.settings.New('block', dtype = int, initial = 3))
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 250))
+        exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 500)) 
+        exp_settings.append(self.settings.New('punish', dtype = int, initial = 2000)) 
         
         
-        exp_settings.append(self.settings.New('channel1', dtype = int, initial = 2)) 
-        exp_settings.append(self.settings.New('channel2', dtype = int, initial = 2)) 
+        exp_settings.append(self.settings.New('channel1', dtype = int, initial = 5)) 
+        exp_settings.append(self.settings.New('channel2', dtype = int, initial = 5)) 
         exp_settings.append(self.settings.New('level1', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 400))
-        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1000))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 50))
+        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 300))
+        
+        
 
         self.exp_settings = exp_settings
+        '''
+        Setting up lqs for recording stats
+        '''
+        self.stat_settings = []
+        self.stat_settings.append(self.settings.New('trial', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('success', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('failure', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('early', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('idle', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('success_percent', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('failure_percent', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('early_percent', dtype = int, initial = 0, ro = True))
+        self.stat_settings.append(self.settings.New('idle_percent', dtype = int, initial = 0, ro = True))
+        
+        '''
+        Setting up lqs for indicator lights
+        '''
+        self.state_ind = []
+        self.reward_ind = []
+        self.lick_ind = []
+        
+        self.state_ind.append(self.settings.New('delay_ind', dtype=bool, initial=False, ro = True))
+        self.state_ind.append(self.settings.New('go_ind', dtype=bool, initial=False, ro = True))
+        self.state_ind.append(self.settings.New('refract_ind', dtype=bool, initial=False, ro = True))
+        self.state_ind.append(self.settings.New('punish_ind', dtype=bool, initial=False, ro = True))
+        
+        self.reward_ind.append(self.settings.New('left_reward_ind', dtype=bool, initial=False, ro = True))
+        self.reward_ind.append(self.settings.New('right_reward_ind', dtype=bool, initial=False, ro = True))
+        
+        self.lick_ind.append(self.settings.New('left_lick_ind', dtype=bool, initial=False, ro = True))
+        self.lick_ind.append(self.settings.New('right_lick_ind', dtype=bool, initial=False, ro = True))
+        
+        self.all_ind = self.state_ind + self.reward_ind + self.lick_ind
+
+        
         #self.settings.New('sampling_period', dtype=float, unit='s', initial=0.005)
         
         # Create empty numpy array to serve as a buffer for the acquired data
@@ -235,12 +364,15 @@ class VOTABlockTrainingMeasure(Measurement):
         
         # Define how often to update display during a run
         self.display_update_period = 0.04 
-        
+        '''
+        add reference to hardware
+        '''
         # Convenient reference to the hardware used in the measurement
         self.daq_ai = self.app.hardware['daq_ai']
         self.arduino_sol = self.app.hardware['arduino_sol']
         self.water=self.app.hardware['arduino_water']
         self.camera=self.app.hardware['camera']
+        self.sound=self.app.hardware['sound']
 
     def setup_figure(self):
         """
@@ -252,13 +384,48 @@ class VOTABlockTrainingMeasure(Measurement):
         # connect ui widgets to measurement/hardware settings or functions
         self.ui.start_pushButton.clicked.connect(self.start)
         self.ui.interrupt_pushButton.clicked.connect(self.interrupt)
+        self.settings.train.connect_to_widget(self.ui.train_checkBox)
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
         self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
+        self.settings.random.connect_to_widget(self.ui.random_checkBox)
         for exp_setting in self.exp_settings:
             exp_widget_name=exp_setting.name+'_doubleSpinBox'
             #print(exp_widget_name)
             exp_widget=self.ui.findChild(QDoubleSpinBox,exp_widget_name)
             exp_setting.connect_to_widget(exp_widget)
+            
+        for stat_setting in self.stat_settings:
+            stat_widget_name=stat_setting.name+'_doubleSpinBox'
+            #print(exp_widget_name)
+            stat_widget=self.ui.findChild(QDoubleSpinBox,stat_widget_name)
+            stat_setting.connect_to_widget(stat_widget)
+            
+        for ind in self.all_ind:
+            ind_widget_name=ind.name+'_checkBox'
+            ind_widget=self.ui.findChild(QCheckBox,ind_widget_name)
+            ind.connect_to_widget(ind_widget)
+            
+        '''
+        Setting light icons and colors for indicators
+        '''
+        self.ui.delay_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:orange;}QCheckBox::indicator:checked{image: url(./icons/c_o.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_o.png);}')
+        self.ui.go_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+        self.ui.refract_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
+        self.ui.punish_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:red;}QCheckBox::indicator:checked{image: url(./icons/c_r.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_r.png);}')
+        
+        self.ui.right_lick_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+        self.ui.left_lick_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
+        
+        self.ui.right_reward_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+        self.ui.left_reward_ind_checkBox.setStyleSheet(
+            'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
         
         # Set up pyqtgraph graph_layout in the UI
         self.graph_layout=pg.GraphicsLayoutWidget()
@@ -283,12 +450,27 @@ class VOTABlockTrainingMeasure(Measurement):
         self.odor_plot = []
         for i in range(8):
             self.odor_plot.append(self.plot3.plot([i]))
+
         
         self.lick_plot_0.setPen('y')
         self.lick_plot_1.setPen('g')
         
+        self.odor_plot[0].setPen('b')
+
+        self.odor_plot[4].setPen('b')
+        
         self.T=np.linspace(0,10,10000)
         self.k=0
+        
+        self.plot4 = self.aux_graph_layout.addPlot(title = 'Statistics')
+        self.stat_plot = []
+        for i in range(4):
+            self.stat_plot.append(self.plot4.plot([i]))
+        self.stat_plot[0].setPen('g')
+        self.stat_plot[1].setPen('r')
+        self.stat_plot[2].setPen('m')
+        self.stat_plot[3].setPen('y')
+
         
         self.camera_view=pg.ViewBox()
         self.camera_layout.addItem(self.camera_view)
@@ -308,6 +490,9 @@ class VOTABlockTrainingMeasure(Measurement):
         
         for i in range(8):
             self.odor_plot[i].setData(self.k + self.T, self.buffer[:,i+4])
+        
+        for i in range(4):
+            self.stat_plot[i].setData(self.stat[0,0:self.ntrials+1],self.stat[5+i,0:self.ntrials+1])
        
         if self.settings.movie_on.value():
             self.camera_image.setImage(self.camera.read())
@@ -322,12 +507,26 @@ class VOTABlockTrainingMeasure(Measurement):
         It should not update the graphical interface directly, and should only
         focus on data acquisition.
         """
+        '''
+        disable controls
+        '''
+        self.settings.save_h5.change_readonly(True)
+        self.settings.save_movie.change_readonly(True)
+        self.settings.train.change_readonly(True)
+        
+        self.ui.save_h5_checkBox.setEnabled(False)
+        self.ui.save_movie_checkBox.setEnabled(False)
+        self.ui.train_checkBox.setEnabled(False)
+        
+            
         if self.camera.connected.value():
             self.settings.movie_on.update_value(True)
         
-        
+        self.ntrials = 1
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
         self.buffer = np.zeros((10000,num_of_chan+10), dtype=float)
+        self.stat = np.zeros((9,2000), dtype = float)
+        statrec = StatRec()
         '''
         initialize position
         '''
@@ -360,6 +559,10 @@ class VOTABlockTrainingMeasure(Measurement):
                                                           shape = self.buffer.shape,
                                                           dtype = self.buffer.dtype,
                                                           maxshape=(None,self.buffer.shape[1]))
+            
+            self.stat_h5 = self.h5_group.create_dataset(name  = 'stat', 
+                                                          shape = self.stat.shape,
+                                                          dtype = self.stat.dtype)
         
         if self.settings.save_movie.value():
             file_name_index=0
@@ -377,6 +580,12 @@ class VOTABlockTrainingMeasure(Measurement):
         if self.settings.train.value():
             odorgen = OdorGen(T = self.settings.delay.value())
             task = TrainingTask(water_hw = self.water, odor_gen = odorgen,
+                                sound_hw = self.sound,
+                                stat_rec = statrec,
+                                random_lq = self.settings.random,
+                                state_lqs = self.state_ind,
+                                reward_lqs = self.reward_ind,
+                                block = self.settings.block.value(),
                                 delay = self.settings.delay.value(),
                                 go = self.settings.go.value(),
                                 refract = self.settings.refract.value(),
@@ -436,6 +645,9 @@ class VOTABlockTrainingMeasure(Measurement):
                 self.buffer[i,1]=lick_0 #convert lick sensor into 0(no lick) and 1(lick)
                 self.buffer[i,2]=lick_1
                 
+                self.lick_ind[0].update_value(lick_0)
+                self.lick_ind[1].update_value(lick_1)
+                
                 '''
                 get a readout for lick
                 '''
@@ -456,6 +668,8 @@ class VOTABlockTrainingMeasure(Measurement):
                     odor, odor_disp = odorgen.step()
                     self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
                     self.arduino_sol.load(odor)
+                else:
+                    self.arduino_sol.load([0,0,0,0,100,0,0,0])
                 '''
                 Read and save Position and Speed at 100Hz(default) (3:position 4:speed)
                 '''
@@ -472,6 +686,8 @@ class VOTABlockTrainingMeasure(Measurement):
                 write odor value to display (7:clean air 8:odor1 9:odor2 10:odor3)
                 '''
                     #to be implemented
+                    
+               
                 '''
                 Save hdf5 file
                 '''
@@ -489,7 +705,16 @@ class VOTABlockTrainingMeasure(Measurement):
                 i += 1
                 j += 1
                
-                
+                '''
+                update_statistics
+                '''
+                if not statrec.updated():
+                    self.stat[:], self.ntrials = statrec.write()
+                    for counter in range(9):
+                        self.stat_settings[counter].update_value(self.stat[counter,self.ntrials])
+                    if self.settings['save_h5']:
+                        self.stat_h5[:] = self.stat[:]
+                        
                 if self.interrupt_measurement_called:
                     # Listen for interrupt_measurement_called flag.
                     # This is critical to do, if you don't the measurement will
@@ -508,4 +733,12 @@ class VOTABlockTrainingMeasure(Measurement):
             if self.camera.connected.value():
                 self.settings.movie_on.update_value(False)
             if self.settings.save_movie.value():
-                self.camera.close_file()                
+                self.camera.close_file()     
+                
+            self.settings.save_h5.change_readonly(False)
+            self.settings.save_movie.change_readonly(False)
+            self.settings.train.change_readonly(False)
+            
+            self.ui.save_h5_checkBox.setEnabled(True)
+            self.ui.save_movie_checkBox.setEnabled(True)
+            self.ui.train_checkBox.setEnabled(True)           
