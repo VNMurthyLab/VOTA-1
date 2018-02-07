@@ -1,5 +1,0 @@
-import winsound
-
-#winsound.PlaySound('beep-07.wav', winsound.SND_FILENAME)
-
-winsound.Beep(20000,1000)

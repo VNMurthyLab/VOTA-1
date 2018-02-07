@@ -1,6 +1,9 @@
 MODULES_MANAGER_V2
 Main_Interface|D:\Hao\VOTA\VOTA_Control\Main_Interface.py
 VOTAScopeHW.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\__init__.py
+VOTAScopeHW.arduino_odometer.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_odometer\__init__.py
+VOTAScopeHW.arduino_odometer.arduino_odometer_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_odometer\arduino_odometer_dev.py
+VOTAScopeHW.arduino_odometer.arduino_odometer_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_odometer\arduino_odometer_hw.py
 VOTAScopeHW.arduino_sol.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\__init__.py
 VOTAScopeHW.arduino_sol.arduino_sol_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_dev.py
 VOTAScopeHW.arduino_sol.arduino_sol_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\arduino_sol\arduino_sol_hw.py
@@ -24,10 +27,15 @@ VOTAScopeHW.daq_ai.test_pydaqmx|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\daq_ai\test
 VOTAScopeHW.odor_gen.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\__init__.py
 VOTAScopeHW.odor_gen.odor_gen_dev|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_dev.py
 VOTAScopeHW.odor_gen.odor_gen_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\odor_gen\odor_gen_hw.py
-VOTAScopeHW.sound.sound_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\sound\sound_hw.py
-VOTAScopeHW.sound.test_sound|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\sound\test_sound.py
+VOTAScopeHW.thorcam.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\thorcam\__init__.py
+VOTAScopeHW.thorcam.thorcam_hw|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\thorcam\thorcam_hw.py
+VOTAScopeHW.thorcam.thorcam_test|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\thorcam\thorcam_test.py
+VOTAScopeHW.thorcam.uc480.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\thorcam\uc480\__init__.py
+VOTAScopeHW.thorcam.uc480.uc480_h|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\thorcam\uc480\uc480_h.py
+VOTAScopeHW.thorcam.uc480.wintypes_linux|D:\Hao\VOTA\VOTA_Control\VOTAScopeHW\thorcam\uc480\wintypes_linux.py
 VOTAScopeMS.__init__|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\__init__.py
 VOTAScopeMS.block_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\block_training.py
 VOTAScopeMS.lick_training|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\lick_training.py
+VOTAScopeMS.lick_training_withsound|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\lick_training_withsound.py
 VOTAScopeMS.sol_calibration|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\sol_calibration.py
 VOTAScopeMS.test_camera|D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\test_camera.py

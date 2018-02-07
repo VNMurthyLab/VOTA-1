@@ -29,10 +29,14 @@ class VOTAScopeApp(BaseMicroscopeApp):
 #         self.add_hardware(ArduinoWheelHW(self))
         from VOTAScopeHW.arduino_water.arduino_water_hw import ArduinoWaterHW
         self.add_hardware(ArduinoWaterHW(self))
-        from VOTAScopeHW.camera.camera_hw import CameraHW
-        self.add_hardware(CameraHW(self))
+#         from VOTAScopeHW.camera.camera_hw import CameraHW
+#         self.add_hardware(CameraHW(self))
+        from VOTAScopeHW.thorcam.thorcam_hw import ThorCamHW
+        self.add_hardware(ThorCamHW(self))
         from VOTAScopeHW.sound.sound_hw import SoundHW
         self.add_hardware(SoundHW(self))
+        from VOTAScopeHW.arduino_odometer.arduino_odometer_hw import ArduinoOdometerHW
+        self.add_hardware(ArduinoOdometerHW(self))
         
         #Add measurement components
         print("Create Measurement objects")
@@ -72,9 +76,9 @@ if __name__ == '__main__':
     app.hardware['daq_ai'].settings.connected.update_value(True)
     app.hardware['arduino_sol'].settings.connected.update_value(True)
 #     app.hardware['odor_gen'].settings.connected.update_value(True)
-    #app.hardware['arduino_wheel'].settings.connected.update_value(True)
+    app.hardware['arduino_odometer'].settings.connected.update_value(True)
     app.hardware['arduino_water'].settings.connected.update_value(True)
-    app.hardware['camera'].settings.connected.update_value(True)
+    app.hardware['thorcam'].settings.connected.update_value(True)
     app.hardware['sound'].settings.connected.update_value(True)
     
     sys.exit(app.exec_())

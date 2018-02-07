@@ -307,7 +307,7 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('delay', dtype = int, initial = 250))
         exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
         exp_settings.append(self.settings.New('refract', dtype = int, initial = 500)) 
-        exp_settings.append(self.settings.New('punish', dtype = int, initial = 2000)) 
+        exp_settings.append(self.settings.New('punish', dtype = int, initial = 1000)) 
         
         
         exp_settings.append(self.settings.New('channel1', dtype = int, initial = 5)) 
@@ -316,8 +316,8 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 300))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 80))
+        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 500))
         
         
 
@@ -371,8 +371,9 @@ class VOTABlockTrainingMeasure(Measurement):
         self.daq_ai = self.app.hardware['daq_ai']
         self.arduino_sol = self.app.hardware['arduino_sol']
         self.water=self.app.hardware['arduino_water']
-        self.camera=self.app.hardware['camera']
+        self.camera=self.app.hardware['thorcam']
         self.sound=self.app.hardware['sound']
+        self.odometer = self.app.hardware['arduino_odometer']
 
     def setup_figure(self):
         """
@@ -427,7 +428,10 @@ class VOTABlockTrainingMeasure(Measurement):
         self.ui.left_reward_ind_checkBox.setStyleSheet(
             'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
         
-        # Set up pyqtgraph graph_layout in the UI
+        '''
+        Set up pyqtgraph graph_layout in the UI
+        '''
+        
         self.graph_layout=pg.GraphicsLayoutWidget()
         self.ui.plot_groupBox.layout().addWidget(self.graph_layout)
         
@@ -436,9 +440,14 @@ class VOTABlockTrainingMeasure(Measurement):
         
         self.camera_layout=pg.GraphicsLayoutWidget()
         self.ui.camera_groupBox.layout().addWidget(self.camera_layout)
-
+        
+        self.position_layout=pg.GraphicsLayoutWidget()
+        self.ui.position_plot_groupBox.layout().addWidget(self.graph_layout)
         # Create PlotItem object (a set of axes)  
      
+        '''
+        add plot
+        '''
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="Lick")
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="breathing")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="odor")
@@ -477,6 +486,10 @@ class VOTABlockTrainingMeasure(Measurement):
         self.camera_image=pg.ImageItem()
         self.camera_view.addItem(self.camera_image)
         
+        self.position_plot = self.position_layout.addPlot(title='Position')
+        self.pos_x = np.zeros((100,))
+        self.pos_y = np.zeros((100,))
+        self.position_plot.setData(self.pos_x,self.pos_y)
         
     def update_display(self):
         """
@@ -494,6 +507,16 @@ class VOTABlockTrainingMeasure(Measurement):
         for i in range(4):
             self.stat_plot[i].setData(self.stat[0,0:self.ntrials+1],self.stat[5+i,0:self.ntrials+1])
        
+       
+        '''
+        update position
+        '''
+        self.pos_x[0:-1] = self.pos_x[1:]
+        self.pos_y[0:-1] = self.pos_x[1:]
+        self.pos_x[-1] = self.odometer.settings.x.value()
+        self.pos_y[-1] = self.odometer.settings.y.value()
+        self.position_plot.setData(self.pos_x,self.pos_y)
+        
         if self.settings.movie_on.value():
             self.camera_image.setImage(self.camera.read())
             if self.settings.save_movie.value():
@@ -671,9 +694,10 @@ class VOTABlockTrainingMeasure(Measurement):
                 else:
                     self.arduino_sol.load([0,0,0,0,100,0,0,0])
                 '''
-                Read and save Position and Speed at 100Hz(default) (3:position 4:speed)
+                Read and save Position and Speed at 25Hz(default) (3:position 4:speed)
                 '''
-                # to be implemented
+                if i%20 == 0:
+                    self.odometer.read()
                 '''
                 Read odor value from the odor generator, otherwise fill with clean air(default)
                 '''
