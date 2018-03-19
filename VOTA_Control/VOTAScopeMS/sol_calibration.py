@@ -56,7 +56,7 @@ class VOTASolCalibrationMeasure(Measurement):
         # Convenient reference to the hardware used in the measurement
         self.daq_ai = self.app.hardware['daq_ai']
         self.arduino_sol = self.app.hardware['arduino_sol']
-        self.camera=self.app.hardware['camera']
+        self.camera=self.app.hardware['thorcam']
 
     def setup_figure(self):
         """

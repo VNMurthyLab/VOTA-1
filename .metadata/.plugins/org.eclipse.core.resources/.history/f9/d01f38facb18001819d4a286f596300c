@@ -1,0 +1,57 @@
+'''
+Created on Aug 9, 2017
+
+@author: Hao Wu
+'''
+import numpy as np
+import serial
+import time
+from queue import Queue
+
+class ArduinoMotorDev(object):
+    '''
+    classdocs
+    '''
+
+    def __init__(self, port='COM5',baud_rate=9600):
+        '''
+        Constructor
+        '''
+        self.port=port
+        self.baud_rate=baud_rate
+        self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
+        #self.open()
+        
+        
+    def forward(self):
+        output=bytes('f','utf-8')
+        self.ser.write(output)
+        
+    def backward(self):
+        output=bytes('b','utf-8')
+        self.ser.write(output)
+        
+    def close(self):
+        self.ser.close()
+        
+    def water_on(self,side=0):
+        output=bytes(self.o[side],'utf-8')
+        self.ser.write(output)
+        self.read()
+    
+    def water_off(self,side=0):
+        output=bytes(self.f[side],'utf-8')
+        self.ser.write(output)
+        self.read()
+    
+    def __del__(self):
+        self.close()
+        del self.ser
+
+
+if __name__ == '__main__':
+    water=ArduinoWaterDev()
+    time.sleep(2)
+    for i in range(100):
+        time.sleep(0.1)
+        water.drop_water(0,45)

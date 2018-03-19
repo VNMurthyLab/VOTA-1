@@ -53,7 +53,10 @@ class ArduinoSolHW(HardwareComponent):
         for i in range(len(self.sols)):
             x=self.sols[i].value()
             if (x!=self.sols_old[i]):
-                self._dev.write(i,int(self.calib[x,i]))
+                if self.settings.calibration_on.value():
+                    self._dev.write(i,int(self.calib[x,i]))
+                else:
+                    self._dev.write(i,x)
             self.sols_old[i] = x
         
     def set_low(self):

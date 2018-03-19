@@ -2,12 +2,16 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="frame" key="selection"/>
+		<item value="opera" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="true" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="opera"/>
+			<item value="operation"/>
+			<item value="button"/>
+			<item value="camera"/>
 			<item value="frame"/>
 			<item value="f"/>
 			<item value="1024,1280,4"/>
@@ -19,10 +23,6 @@
 			<item value="IS_PIXEL"/>
 			<item value="rate"/>
 			<item value="IS_WAIT"/>
-			<item value="hcam"/>
-			<item value="sleep"/>
-			<item value="camera"/>
-			<item value="exposure"/>
 		</list>
 		<list key="replacehistory">
 			<item value="dev"/>
