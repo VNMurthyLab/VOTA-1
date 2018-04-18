@@ -29,7 +29,7 @@ void initDAC() {
 void writeDAC (byte channel, byte x) {
   // channel is output 0 - 7, or a combination of them
   // x is between 0x00(0) to 0xFF(255)
-  digitalWrite(csPin, LOW);  
+  digitalWrite(csPin, LOW);
   SPI.transfer(channel);
   SPI.transfer(x);
   digitalWrite(csPin, HIGH);

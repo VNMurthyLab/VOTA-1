@@ -227,10 +227,10 @@ class VOTASolCalibrationMeasure(Measurement):
                     update odor value
                     '''
                     if self.settings.forward.value():
-                        current_high = (j//1000)% 50 * 3 + 100
+                        current_high = (j//1000)% 100 *2 + 50
                         current_low = 0
                     else:
-                        current_high = 255 - (j//1000)% 50 * 3
+                        current_high = 255 - (j//1000)% 100 *2
                         current_low = 255
                         
                     if (j//1000)%2:

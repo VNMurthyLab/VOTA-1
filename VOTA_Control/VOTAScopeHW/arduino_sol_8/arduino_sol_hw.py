@@ -19,7 +19,7 @@ class ArduinoSolHW(HardwareComponent):
     
     name='arduino_sol'
 
-    def setup(self,port='COM3',baud_rate=500000,fname='D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeHW\\arduino_sol_8\\calib.h5'):
+    def setup(self,port='COM7',baud_rate=500000,fname='D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeHW\\arduino_sol_8\\calib.h5'):
         '''
         add settings for analog input event
         '''
@@ -30,14 +30,15 @@ class ArduinoSolHW(HardwareComponent):
         self.settings.New(name='calibration_on', dtype=bool, initial=True,ro=False)
         self.sols=[]
 
-        self.sols.append(self.settings.New(name='clean_air1',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
+        self.sols.append(self.settings.New(name='clean_air0',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
         self.sols.append(self.settings.New(name='odor1',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
         self.sols.append(self.settings.New(name='odor2',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
         self.sols.append(self.settings.New(name='odor3',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
-        self.sols.append(self.settings.New(name='clean_air2',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
-        self.sols.append(self.settings.New(name='odor4',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
+        self.sols.append(self.settings.New(name='clean_air4',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
         self.sols.append(self.settings.New(name='odor5',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
         self.sols.append(self.settings.New(name='odor6',initial=0,dtype=int,ro=False,vmin=0,vmax=100))
+        self.sols.append(self.settings.New(name='odor7',initial=0,dtype=int,ro=False,vmin=0,vmax=100
+                                           ))
         self.load_calib()
         
         self.sols_old = []
