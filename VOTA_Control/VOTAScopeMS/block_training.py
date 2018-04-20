@@ -13,6 +13,7 @@ import time
 import os
 from random import randint,random
 from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
+from blaze.expr.reductions import std
             
 class VOTABlockTrainingMeasure(Measurement):
     
@@ -47,6 +48,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('random',dtype=bool, initial=False, ro= False)
         self.settings.New('audio_on',dtype=bool,initial = False,ro = False)
         self.settings.New('lick_training',dtype=bool,initial=False)
+        self.settings.New('free_drop', dtype = bool, initial = False)
         '''
         setting up experimental setting parameters for task
         '''
@@ -54,9 +56,9 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 2000, vmin = 500))
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 3000, vmin = 500))
         exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
-        exp_settings.append(self.settings.New('refract', dtype = int, initial = 2500, vmin = 500)) 
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 1500, vmin = 500)) 
         exp_settings.append(self.settings.New('punish', dtype = int, initial = 3000)) 
         
         
@@ -66,8 +68,8 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 100))
-        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1000))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 500))
+        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
         
         
 
@@ -376,7 +378,8 @@ class VOTABlockTrainingMeasure(Measurement):
                                 go = self.settings.go.value(),
                                 refract = self.settings.refract.value(),
                                 punish = self.settings.punish.value(),
-                                lick_training = self.settings.lick_training.value())
+                                lick_training = self.settings.lick_training.value(),
+                                free_drop = self.settings.free_drop.value())
             task.set_stimuli(side = 1,
                              channel = self.settings.channel1.value(),
                              level = self.settings.level1.value(),
@@ -456,7 +459,7 @@ class VOTABlockTrainingMeasure(Measurement):
                     self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
                     self.arduino_sol.load(odor)
                 else:
-                    self.arduino_sol.load([100,0,0,0,0,0,0,0])
+                    self.arduino_sol.load([90,0,0,0,0,0,0,0])
                     pass
 
                 '''
@@ -654,7 +657,7 @@ class OdorGen(object):
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = 100
+        default_output[0] = 90
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -667,25 +670,36 @@ class OdorGen(object):
             return default_output,default_output
             
     
-    def new_trial(self, channel = 4, level = 30, Tpulse = 50, interval = 2000):
+    def new_trial(self, channel = 4, level = 30, Tpulse = 50, interval = 2000, std = 1):
         '''
         generate new time series
         called from a task
         '''
         self.tick = 0 #reset tick
-        '''
-        Exponential Process Generation
-        '''
-        base_intervals = np.random.exponential(scale = interval, size = (50,)) #pulses are exponentially distributed
-        base_onsets = base_intervals.cumsum().astype(int)
+        
+        low_bound = 1.0 * self.T / interval - std
+        high_bound = 1.0 * self.T / interval + std
+        total_count = 0
         
         '''
-        Spike generation
+        generate spike trace with a certain number of pulses, within the range defined by the std
         '''
-        full_length = int(base_intervals.sum()+2000)
-        spike_trace = np.zeros((full_length,))
-        spike_trace[base_onsets] = 1
-        spike_trace = spike_trace[0:self.T]
+        while total_count<low_bound or total_count > high_bound:
+            '''
+            Exponential Process Generation
+            '''
+            base_intervals = np.random.exponential(scale = interval, size = (50,)) #pulses are exponentially distributed
+            base_onsets = base_intervals.cumsum().astype(int)
+            
+            '''
+            Spike generation
+            '''
+            full_length = int(base_intervals.sum()+2000)
+            spike_trace = np.zeros((full_length,))
+            spike_trace[base_onsets] = 1
+            spike_trace = spike_trace[0:self.T]
+            total_count = spike_trace.sum()
+            
         '''
         Covolution with a kernel for valve control
         '''
@@ -695,11 +709,11 @@ class OdorGen(object):
         y[3:5] = 90
         y[5:10] = 80
         output_trace = np.convolve(spike_trace,y)[0:self.T]
-        output_trace =output_trace.clip(0,100) #amke sure output is with in range
+        output_trace =output_trace.clip(0,100) #make sure output is with in range
         '''
         output to both solenoid valve buffer and display
         '''
-        clean_trace = 100 - output_trace_disp
+        clean_trace = 90 - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
         self.odor_buffer[0,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
@@ -712,7 +726,7 @@ class TrainingTask(object):
     '''
     
     def __init__(self, audio_on, water_hw, odor_gen, sound_hw, motor_hw, stat_rec, 
-                 side_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000, lick_training = False):
+                 side_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000, lick_training = False, free_drop = False):
         '''
         tick is for measuring time
         '''
@@ -735,6 +749,7 @@ class TrainingTask(object):
         self.state_lqs = state_lqs
         self.reward_lqs = reward_lqs
         self.lick_training = lick_training
+        self.free_drop = free_drop
         
         self.water_available = False
         self.duration = [delay,go,refract,punish]
@@ -815,6 +830,9 @@ class TrainingTask(object):
                 self.sound.start()
             else:
                 self.motor.settings.lick_position.update_value(True)
+            
+            if self.free_drop:
+                self.water.give_water(self.side - 1)
             self.set_state('go')
             
             
