@@ -68,7 +68,7 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 200))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 300))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
         
         
