@@ -173,12 +173,12 @@ class VOTABlockTrainingMeasure(Measurement):
             'QCheckBox{color:red;}QCheckBox::indicator:checked{image: url(./icons/c_r.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_r.png);}')
         
         self.ui.right_lick_ind_checkBox.setStyleSheet(
-            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
+            'QCheckBox{color:blue;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
         self.ui.left_lick_ind_checkBox.setStyleSheet(
             'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
         
         self.ui.right_reward_ind_checkBox.setStyleSheet(
-            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
+            'QCheckBox{color:blue;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
         self.ui.left_reward_ind_checkBox.setStyleSheet(
             'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
         
