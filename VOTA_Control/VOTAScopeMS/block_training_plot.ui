@@ -156,7 +156,7 @@
             <bool>true</bool>
            </property>
            <property name="styleSheet">
-            <string notr="true">color:rgb(255, 255, 0)</string>
+            <string notr="true"/>
            </property>
            <property name="suffix">
             <string>%</string>
@@ -169,7 +169,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="label_24">
            <property name="styleSheet">
-            <string notr="true">color:rgb(255, 255, 0)</string>
+            <string notr="true"/>
            </property>
            <property name="text">
             <string>No Action</string>
@@ -182,7 +182,7 @@
             <bool>true</bool>
            </property>
            <property name="styleSheet">
-            <string notr="true">color:rgb(255, 255, 0)</string>
+            <string notr="true"/>
            </property>
            <property name="decimals">
             <number>0</number>

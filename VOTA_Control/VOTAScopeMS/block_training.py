@@ -68,7 +68,7 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 500))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 200))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
         
         
@@ -173,12 +173,12 @@ class VOTABlockTrainingMeasure(Measurement):
             'QCheckBox{color:red;}QCheckBox::indicator:checked{image: url(./icons/c_r.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_r.png);}')
         
         self.ui.right_lick_ind_checkBox.setStyleSheet(
-            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
         self.ui.left_lick_ind_checkBox.setStyleSheet(
             'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
         
         self.ui.right_reward_ind_checkBox.setStyleSheet(
-            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_g.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_g.png);}')
+            'QCheckBox{color:green;}QCheckBox::indicator:checked{image: url(./icons/c_b.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_b.png);}')
         self.ui.left_reward_ind_checkBox.setStyleSheet(
             'QCheckBox{color:yellow;}QCheckBox::indicator:checked{image: url(./icons/c_y.png);}QCheckBox::indicator:unchecked{image: url(./icons/uc_y.png);}')
         
@@ -216,7 +216,7 @@ class VOTABlockTrainingMeasure(Measurement):
 
         
         self.lick_plot_0.setPen('y')
-        self.lick_plot_1.setPen('g')
+        self.lick_plot_1.setPen('b')
         
         self.odor_plot[0].setPen('b')
 
@@ -232,8 +232,8 @@ class VOTABlockTrainingMeasure(Measurement):
         self.stat_plot[0].setPen('g')
         self.stat_plot[1].setPen('r')
         self.stat_plot[2].setPen('m')
-        self.stat_plot[3].setPen('y')
-        self.stat_plot[4].setPen('w')
+        self.stat_plot[3].setPen('w')
+        self.stat_plot[4].setPen('y')
         self.stat_plot[5].setPen('b')
         
         self.camera_view=pg.ViewBox()
@@ -459,7 +459,7 @@ class VOTABlockTrainingMeasure(Measurement):
                     self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
                     self.arduino_sol.load(odor)
                 else:
-                    self.arduino_sol.load([90,0,0,0,0,0,0,0])
+                    self.arduino_sol.load([88,0,0,0,0,0,0,0])
                     pass
 
                 '''
@@ -657,7 +657,7 @@ class OdorGen(object):
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = 90
+        default_output[0] = 88
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -713,7 +713,7 @@ class OdorGen(object):
         '''
         output to both solenoid valve buffer and display
         '''
-        clean_trace = 90 - output_trace_disp
+        clean_trace = 88 - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
         self.odor_buffer[0,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
