@@ -457,7 +457,7 @@ class uc480:
     def open_file(self,fpath):
         self.fpath=fpath
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.out = cv2.VideoWriter(self.fpath,fourcc, 25.0, (1024,1280))
+        self.out = cv2.VideoWriter(self.fpath,fourcc, 10.0, (1024,1280))
         
     def write(self):
         self.out.write(cv2.rotate(self.frame,cv2.ROTATE_90_COUNTERCLOCKWISE))

@@ -509,11 +509,13 @@ class VOTABlockTrainingMeasure(Measurement):
                         self.stat_settings[counter].update_value(self.stat[counter,self.ntrials])
                     if self.settings['save_h5']:
                         self.stat_h5[:] = self.stat[:]
+                        self.h5file.flush()
                         
                 if not siderec.updated():
                     self.side_stat[:] = siderec.write()
                     if self.settings['save_h5']:
                         self.side_stat_h5[:] = self.side_stat[:]
+                        self.h5file.flush()
                         
                 if self.interrupt_measurement_called:
                     # Listen for interrupt_measurement_called flag.
