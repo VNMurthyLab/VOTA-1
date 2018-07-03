@@ -13,19 +13,19 @@ class ArduinoMotorDev(object):
     classdocs
     '''
 
-    def __init__(self, port='COM5',baud_rate=250000):
+    def __init__(self, port='COM3',baud_rate=115200):
         '''
         Constructor
         '''
         self.port=port
         self.baud_rate=baud_rate
-        self.ser=serial.Serial(self.port,self.baud_rate,timeout=1)
+        self.ser=serial.Serial(self.port,self.baud_rate,timeout=1,xonxoff=True)
         self.lick_position = True
         
         #self.open()
         
     def reset(self):
-        output=bytes('r','utf-8')
+        output=bytes('g0x100\r','utf-8')
         self.ser.write(output)
         time.sleep(0.4)
         self.backward()
@@ -42,11 +42,11 @@ class ArduinoMotorDev(object):
             self.lick_position = position
          
     def forward(self):
-        output=bytes('f','utf-8')
+        output=bytes('g0x0\r','utf-8')
         self.ser.write(output)
         
     def backward(self):
-        output=bytes('b','utf-8')
+        output=bytes('g0x100\r','utf-8')
         self.ser.write(output)
         
     def close(self):

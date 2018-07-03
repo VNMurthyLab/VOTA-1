@@ -15,7 +15,7 @@ class ArduinoMotorHW(HardwareComponent):
     
     name='arduino_motor'
 
-    def setup(self,port='COM5',baud_rate=250000):
+    def setup(self,port='COM3',baud_rate=115200):
         '''
         add settings for analog input event
         '''

@@ -39,7 +39,7 @@ void setup() {
   pinMode(MS3, OUTPUT);
   pinMode(EN, OUTPUT);
   resetBEDPins(); //Set step, direction, microstep and enable pins to default states
-  Serial.begin(250000); //Open Serial connection for debugging
+  Serial.begin(9600); //Open Serial connection for debugging
 }
 
 //Main loop
@@ -79,11 +79,11 @@ void StepForwardDefault()
 {
   digitalWrite(dir, HIGH); //Pull direction pin low to move "forward"
   delay(10);
-  for(x= 1; x<100; x++)  //Loop the forward stepping enough times for motion to be visible
+  for(x= 1; x<300; x++)  //Loop the forward stepping enough times for motion to be visible
   {
-    digitalWrite(stp,HIGH); //Trigger one step forward
+    digitalWrite(stp,LOW); //Trigger one step forward
     delayMicroseconds(1400);
-    digitalWrite(stp,LOW); //Pull step pin low so it can be triggered again
+    digitalWrite(stp,HIGH); //Pull step pin low so it can be triggered again
     delayMicroseconds(1000);
   }
 }
@@ -93,11 +93,11 @@ void ReverseStepDefault()
 {
   digitalWrite(dir, LOW); //Pull direction pin high to move in "reverse"
   delay(10);
-  for(x= 1; x<100; x++)  //Loop the stepping enough times for motion to be visible
+  for(x= 1; x<300; x++)  //Loop the stepping enough times for motion to be visible
   {
-    digitalWrite(stp,HIGH); //Trigger one step
+    digitalWrite(stp,LOW); //Trigger one step
     delayMicroseconds(1400);
-    digitalWrite(stp,LOW); //Pull step pin low so it can be triggered again
+    digitalWrite(stp,HIGH); //Pull step pin low so it can be triggered again
     delayMicroseconds(1000);
   }
 }
