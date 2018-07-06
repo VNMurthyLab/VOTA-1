@@ -49,6 +49,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('audio_on',dtype=bool,initial = False,ro = False)
         self.settings.New('lick_training',dtype=bool,initial=False)
         self.settings.New('free_drop', dtype = bool, initial = False)
+        self.settings.New('threshold',dtype=float,initial = 0.3)
         '''
         setting up experimental setting parameters for task
         '''
@@ -831,6 +832,7 @@ class TrainingTask(object):
             if self.audio_on:
                 self.sound.start()
             else:
+                self.sound.start()
                 self.motor.settings.lick_position.update_value(True)
             
             if self.free_drop:
@@ -898,6 +900,7 @@ class TrainingTask(object):
             if self.tick > self.duration[my_state]:
                 self.set_state('delay')
                 if not self.audio_on:
+                    self.sound.correct()
                     self.motor.settings.lick_position.update_value(False)
         
     def punish_step(self, lick = 0):
@@ -906,4 +909,5 @@ class TrainingTask(object):
             
         my_state = self.state_dict['punish']
         if self.tick > self.duration[my_state]:
+            self.sound.correct()
             self.set_state('delay')
