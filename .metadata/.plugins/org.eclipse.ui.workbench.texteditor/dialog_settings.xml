@@ -2,12 +2,19 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="opera" key="selection"/>
+		<item value="set" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="true" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="set"/>
+			<item value="position_map"/>
+			<item value="position"/>
+			<item value="buffer"/>
+			<item value="odor_gen"/>
+			<item value="audio"/>
+			<item value="sound"/>
 			<item value="opera"/>
 			<item value="operation"/>
 			<item value="button"/>
@@ -16,13 +23,6 @@
 			<item value="f"/>
 			<item value="1024,1280,4"/>
 			<item value="self.frame"/>
-			<item value="open_file"/>
-			<item value="set exposure"/>
-			<item value="IS_PIX"/>
-			<item value="125"/>
-			<item value="IS_PIXEL"/>
-			<item value="rate"/>
-			<item value="IS_WAIT"/>
 		</list>
 		<list key="replacehistory">
 			<item value="dev"/>
@@ -31,7 +31,7 @@
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
 		<item value="284" key="DIALOG_WIDTH"/>
-		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
+		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|5|0|Segoe UI" key="DIALOG_FONT_NAME"/>
 		<item value="391" key="DIALOG_HEIGHT"/>
 		<item value="1395" key="DIALOG_X_ORIGIN"/>
 		<item value="259" key="DIALOG_Y_ORIGIN"/>

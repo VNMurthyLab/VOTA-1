@@ -406,33 +406,13 @@
       <string>Controls</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="3" column="1">
+      <item row="4" column="1">
        <widget class="QCheckBox" name="save_h5_checkBox">
         <property name="styleSheet">
          <string notr="true">color:rgb(255, 170, 0)</string>
         </property>
         <property name="text">
          <string>Save Data</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2">
-       <widget class="QCheckBox" name="save_movie_checkBox">
-        <property name="styleSheet">
-         <string notr="true">color:rgb(170, 170, 255)</string>
-        </property>
-        <property name="text">
-         <string>Save Movie</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QCheckBox" name="train_checkBox">
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
-        </property>
-        <property name="text">
-         <string>Train</string>
         </property>
        </widget>
       </item>
@@ -444,6 +424,26 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="text">
          <string>Start</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QCheckBox" name="save_movie_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color:rgb(170, 170, 255)</string>
+        </property>
+        <property name="text">
+         <string>Save Movie</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QCheckBox" name="train_checkBox">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="text">
+         <string>Train</string>
         </property>
        </widget>
       </item>
@@ -479,6 +479,33 @@ background-color: rgb(148, 148, 148);</string>
       <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
+      <item row="1" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="block_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>interval</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>block</string>
+        </property>
+       </widget>
+      </item>
       <item row="8" column="2">
        <widget class="QDoubleSpinBox" name="level2_doubleSpinBox">
         <property name="enabled">
@@ -486,22 +513,6 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 255, 0);</string>
-        </property>
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QDoubleSpinBox" name="level1_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 255, 0)</string>
         </property>
         <property name="suffix">
          <string>%</string>
@@ -521,6 +532,22 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
+      <item row="8" column="1">
+       <widget class="QDoubleSpinBox" name="level1_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>%</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_2">
         <property name="styleSheet">
@@ -528,6 +555,16 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="text">
          <string>go</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="styleSheet">
+         <string>color: rgb(255, 255, 127);</string>
+        </property>
+        <property name="text">
+         <string>refract</string>
         </property>
        </widget>
       </item>
@@ -547,16 +584,6 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="styleSheet">
-         <string>color: rgb(255, 255, 127);</string>
-        </property>
-        <property name="text">
-         <string>refract</string>
-        </property>
-       </widget>
-      </item>
       <item row="9" column="2">
        <widget class="QDoubleSpinBox" name="Tpulse2_doubleSpinBox">
         <property name="enabled">
@@ -564,6 +591,22 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="punish_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 0, 0);</string>
         </property>
         <property name="suffix">
          <string>ms</string>
@@ -589,22 +632,6 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="punish_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 0, 0);</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
       <item row="5" column="1" colspan="2">
        <widget class="QDoubleSpinBox" name="refract_doubleSpinBox">
         <property name="enabled">
@@ -623,6 +650,22 @@ background-color: rgb(148, 148, 148);</string>
       </item>
       <item row="4" column="1" colspan="2">
        <widget class="QDoubleSpinBox" name="go_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2">
+       <widget class="QDoubleSpinBox" name="interval2_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
@@ -669,19 +712,10 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="2">
-       <widget class="QDoubleSpinBox" name="interval2_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>channel</string>
         </property>
        </widget>
       </item>
@@ -698,13 +732,6 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="decimals">
          <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>channel</string>
         </property>
        </widget>
       </item>
@@ -732,33 +759,6 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="text">
-         <string>interval</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>block</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="block_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="decimals">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QCheckBox" name="random_checkBox">
         <property name="styleSheet">
@@ -766,6 +766,56 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="text">
          <string>Random Trials</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="QDoubleSpinBox" name="kernel1_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="2">
+       <widget class="QDoubleSpinBox" name="kernel2_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>kernel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0" colspan="3">
+       <widget class="QPushButton" name="set_kernel_pushButton">
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(148, 148, 148);</string>
+        </property>
+        <property name="text">
+         <string>Set Kernel</string>
         </property>
        </widget>
       </item>

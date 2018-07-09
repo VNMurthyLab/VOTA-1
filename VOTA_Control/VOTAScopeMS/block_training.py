@@ -49,7 +49,8 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('audio_on',dtype=bool,initial = False,ro = False)
         self.settings.New('lick_training',dtype=bool,initial=False)
         self.settings.New('free_drop', dtype = bool, initial = False)
-        self.settings.New('threshold',dtype=float,initial = 0.3)
+        self.settings.New('sniff_lock', dtype = bool, initial = False)
+        self.settings.New('threshold',dtype=float,initial = 0.6)
         '''
         setting up experimental setting parameters for task
         '''
@@ -71,6 +72,8 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('interval1', dtype = int, initial = 300))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
+        exp_settings.append(self.settings.New('kernel1', dtype = int, initial = 0,vmin=0,vmax=10000))
+        exp_settings.append(self.settings.New('kernel2', dtype = int, initial = 250,vmin=0,vmax=10000))
         
         
 
@@ -129,6 +132,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.sound=self.app.hardware['sound']
         self.odometer = self.app.hardware['arduino_odometer']
         self.motor = self.app.hardware['arduino_motor']
+        self.kernel = np.zeros(250)
 
     def setup_figure(self):
         """
@@ -140,6 +144,7 @@ class VOTABlockTrainingMeasure(Measurement):
         # connect ui widgets to measurement/hardware settings or functions
         self.ui.start_pushButton.clicked.connect(self.start)
         self.ui.interrupt_pushButton.clicked.connect(self.interrupt)
+        self.ui.set_kernel_pushButton.clicked.connect(self.set_kernel)
         self.settings.train.connect_to_widget(self.ui.train_checkBox)
         self.settings.save_h5.connect_to_widget(self.ui.save_h5_checkBox)
         self.settings.save_movie.connect_to_widget(self.ui.save_movie_checkBox)
@@ -243,7 +248,9 @@ class VOTABlockTrainingMeasure(Measurement):
         self.camera_view.addItem(self.camera_image)
         
         self.position_plot = self.position_layout.addPlot(title='Position')
+        self.kernel_plot = self.position_layout.addPlot(title='kernel')
         self.position_map = self.position_plot.plot([0])
+        self.kernel_line = self.kernel_plot.plot([0])
         self.pos_x = np.zeros((100,))
         self.pos_y = np.zeros((100,))
         self.position_map.setData(self.pos_x,self.pos_y)
@@ -365,6 +372,7 @@ class VOTABlockTrainingMeasure(Measurement):
         create odor generator and task object
         '''
         if self.settings.train.value():
+            kernel = np.load('D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeMS\\kernel.npy')
             odorgen = OdorGen(T = self.settings.delay.value())
             task = TrainingTask(audio_on = self.settings.audio_on.value(), water_hw = self.water, odor_gen = odorgen,
                                 sound_hw = self.sound,
@@ -380,7 +388,8 @@ class VOTABlockTrainingMeasure(Measurement):
                                 refract = self.settings.refract.value(),
                                 punish = self.settings.punish.value(),
                                 lick_training = self.settings.lick_training.value(),
-                                free_drop = self.settings.free_drop.value())
+                                free_drop = self.settings.free_drop.value(),
+                                sniff_lock = self.settings.sniff_lock.value())
             task.set_stimuli(side = 1,
                              channel = self.settings.channel1.value(),
                              level = self.settings.level1.value(),
@@ -459,11 +468,28 @@ class VOTABlockTrainingMeasure(Measurement):
                     odor, odor_disp = odorgen.step()
                     self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
                     self.arduino_sol.load(odor)
+                    
+                    
+                    if self.settings.sniff_lock.value():
+                        indices = range(i-250,i)
+                        try:
+                            coeff = np.corrcoef(kernel,self.buffer.take(indices,mode='wrap'))[0,1]
+                            sniff_event = coeff>self.settings.threshold.value()
+                        except Exception as ex:
+                            print(ex)
+                        if sniff_event:
+                            task.gen_pulse()
                 else:
                     self.arduino_sol.load([88,0,0,0,0,0,0,0])
                     pass
-
+                
                 '''
+                detect sniff
+                '''
+                
+                        
+                        
+                '''     
                 Read and save Position and Speed at 25Hz(default) (3:position 4:speed)
                 '''
                 if i%20 == 0:
@@ -547,6 +573,16 @@ class VOTABlockTrainingMeasure(Measurement):
             self.ui.save_movie_checkBox.setEnabled(True)
             self.ui.train_checkBox.setEnabled(True)           
             
+            
+    def set_kernel(self):
+        try:
+            indices = range(self.settings.kernel1.value(),self.settings.kernel2.value())
+            self.kernel = self.buffer[:,0].take(indices,mode = 'wrap')
+            np.save('D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeMS\\kernel.npy',self.kernel)
+            self.kernel_line.setData(self.kernel)
+        except Exception as ex:
+            print(ex)
+        
 class StatRec(object):
     '''
     Record mouse performance such as correct v.s. incorrect response
@@ -655,6 +691,10 @@ class OdorGen(object):
         self.odor_buffer_disp = np.zeros((self.nchan,self.T))
         self.on = False
     
+    def reset(self):
+        self.odor_buffer = np.zeros((self.nchan,self.T))
+        self.odor_buffer_disp = np.zeros((self.nchan,self.T))
+    
     def step(self):
         '''
         output the next odor level in the time series
@@ -723,13 +763,36 @@ class OdorGen(object):
         self.odor_buffer_disp[channel,:] = output_trace_disp
         self.on = True
         
+    def new_pulse(self, channel = 4, level = 30, Tpulse = 50, interval = 2000):
+        '''
+        generate new time series
+        called from a task
+        '''
+        chance = 250.0/interval
+        dice = np.random.rand()
+        if self.on or dice > chance:
+            pass
+        else:
+            self.tick = 0 #reset tick
+            output_trace_disp = np.zeros(self.T)
+            output_trace_disp[0:Tpulse] = level
+            output_trace = output_trace_disp
+            clean_trace = 88 - output_trace_disp
+            clean_trace = clean_trace.clip(0,100)
+            self.odor_buffer[0,:] = clean_trace
+            self.odor_buffer[channel,:] = output_trace
+            self.odor_buffer_disp[channel,:] = output_trace_disp
+            self.on = True
+        
 class TrainingTask(object):
     '''
     task object control the state of the task, and also generate each task
     '''
     
     def __init__(self, audio_on, water_hw, odor_gen, sound_hw, motor_hw, stat_rec, 
-                 side_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000, lick_training = False, free_drop = False):
+                 side_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, 
+                 go = 5000, refract = 2000, punish = 5000, lick_training = False, 
+                 free_drop = False, sniff_lock = False):
         '''
         tick is for measuring time
         '''
@@ -753,6 +816,10 @@ class TrainingTask(object):
         self.reward_lqs = reward_lqs
         self.lick_training = lick_training
         self.free_drop = free_drop
+        self.sniff_lock = sniff_lock
+        if self.sniff_lock:
+            self.odor_gen.T = 100
+            self.odor_gen.reset()
         
         self.water_available = False
         self.duration = [delay,go,refract,punish]
@@ -804,7 +871,8 @@ class TrainingTask(object):
             delivery odor if not in lick training, otherwise do not deliver
             '''
             if not self.lick_training:
-                self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
+                if not self.sniff_lock:
+                    self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
                 
         
     def set_stimuli(self,side = 1, channel = 4, level = 30, Tpulse = 50, interval = 2000):
@@ -813,6 +881,10 @@ class TrainingTask(object):
         self.level[side] = level
         self.Tpulse[side] = Tpulse
         self.interval[side] = interval
+        
+    def gen_pulse(self):
+        side = self.side - 1
+        self.odor_gen.new_pulse(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
         
     def delay_step(self, lick = 0):
         if self.audio_on:

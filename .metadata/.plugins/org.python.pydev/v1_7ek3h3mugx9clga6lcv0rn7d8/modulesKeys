@@ -6202,6 +6202,7 @@ numpy.compat.__init__|D:\Anaconda3\lib\site-packages\numpy\compat\__init__.py
 numpy.compat._inspect|D:\Anaconda3\lib\site-packages\numpy\compat\_inspect.py
 numpy.compat.py3k|D:\Anaconda3\lib\site-packages\numpy\compat\py3k.py
 numpy.compat.setup|D:\Anaconda3\lib\site-packages\numpy\compat\setup.py
+numpy.core
 numpy.core.__init__|D:\Anaconda3\lib\site-packages\numpy\core\__init__.py
 numpy.core._internal|D:\Anaconda3\lib\site-packages\numpy\core\_internal.py
 numpy.core._methods|D:\Anaconda3\lib\site-packages\numpy\core\_methods.py
@@ -6216,6 +6217,7 @@ numpy.core.getlimits|D:\Anaconda3\lib\site-packages\numpy\core\getlimits.py
 numpy.core.info|D:\Anaconda3\lib\site-packages\numpy\core\info.py
 numpy.core.machar|D:\Anaconda3\lib\site-packages\numpy\core\machar.py
 numpy.core.memmap|D:\Anaconda3\lib\site-packages\numpy\core\memmap.py
+numpy.core.multiarray
 numpy.core.numeric|D:\Anaconda3\lib\site-packages\numpy\core\numeric.py
 numpy.core.numerictypes|D:\Anaconda3\lib\site-packages\numpy\core\numerictypes.py
 numpy.core.records|D:\Anaconda3\lib\site-packages\numpy\core\records.py
@@ -6321,6 +6323,7 @@ numpy.fft.fftpack|D:\Anaconda3\lib\site-packages\numpy\fft\fftpack.py
 numpy.fft.helper|D:\Anaconda3\lib\site-packages\numpy\fft\helper.py
 numpy.fft.info|D:\Anaconda3\lib\site-packages\numpy\fft\info.py
 numpy.fft.setup|D:\Anaconda3\lib\site-packages\numpy\fft\setup.py
+numpy.lib
 numpy.lib.__init__|D:\Anaconda3\lib\site-packages\numpy\lib\__init__.py
 numpy.lib._datasource|D:\Anaconda3\lib\site-packages\numpy\lib\_datasource.py
 numpy.lib._iotools|D:\Anaconda3\lib\site-packages\numpy\lib\_iotools.py
@@ -6361,6 +6364,7 @@ numpy.ma.testutils|D:\Anaconda3\lib\site-packages\numpy\ma\testutils.py
 numpy.ma.timer_comparison|D:\Anaconda3\lib\site-packages\numpy\ma\timer_comparison.py
 numpy.ma.version|D:\Anaconda3\lib\site-packages\numpy\ma\version.py
 numpy.matlib|D:\Anaconda3\lib\site-packages\numpy\matlib.py
+numpy.matrixlib
 numpy.matrixlib.__init__|D:\Anaconda3\lib\site-packages\numpy\matrixlib\__init__.py
 numpy.matrixlib.defmatrix|D:\Anaconda3\lib\site-packages\numpy\matrixlib\defmatrix.py
 numpy.matrixlib.setup|D:\Anaconda3\lib\site-packages\numpy\matrixlib\setup.py
@@ -6376,6 +6380,7 @@ numpy.polynomial.polyutils|D:\Anaconda3\lib\site-packages\numpy\polynomial\polyu
 numpy.polynomial.setup|D:\Anaconda3\lib\site-packages\numpy\polynomial\setup.py
 numpy.random.__init__|D:\Anaconda3\lib\site-packages\numpy\random\__init__.py
 numpy.random.info|D:\Anaconda3\lib\site-packages\numpy\random\info.py
+numpy.random.mtrand
 numpy.random.setup|D:\Anaconda3\lib\site-packages\numpy\random\setup.py
 numpy.setup|D:\Anaconda3\lib\site-packages\numpy\setup.py
 numpy.testing.__init__|D:\Anaconda3\lib\site-packages\numpy\testing\__init__.py
