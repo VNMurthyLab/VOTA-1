@@ -314,7 +314,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.ntrials = 1
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
         self.buffer = np.zeros((10000,num_of_chan+12), dtype=float)
-        self.stat = np.zeros((9,2000), dtype = float)
+        self.stat = np.zeros((10,2000), dtype = float)
         self.side_stat = np.zeros((11,2000), dtype = float)
         statrec = StatRec()
         siderec = SideRec()
@@ -410,8 +410,7 @@ class VOTABlockTrainingMeasure(Measurement):
             i = 0 #counter tick for loading buffer
             j = 0 #counter tick for saving hdf5 file
             self.k=0 #number of seconds saved
-            
-           
+
             '''
             Start DAQ, Default at 1kHz
             '''
@@ -471,14 +470,16 @@ class VOTABlockTrainingMeasure(Measurement):
                     
                     
                     if self.settings.sniff_lock.value():
-                        indices = range(i-250,i)
+                        indices = range(i-kernel.size,i)
                         try:
-                            coeff = np.corrcoef(kernel,self.buffer.take(indices,mode='wrap'))[0,1]
+                            coeff = np.corrcoef(kernel,self.buffer[:,0].take(indices,mode='wrap'))[0,1]
                             sniff_event = coeff>self.settings.threshold.value()
+                            if sniff_event and task.state == 0:
+                                task.gen_pulse()
+                                
                         except Exception as ex:
                             print(ex)
-                        if sniff_event:
-                            task.gen_pulse()
+
                 else:
                     self.arduino_sol.load([88,0,0,0,0,0,0,0])
                     pass
@@ -589,12 +590,12 @@ class StatRec(object):
     '''
     
     def __init__(self):
-        self.buffer = np.zeros((9,2000))
+        self.buffer = np.zeros((10,2000))
         self.state_dict = {'success': 1, 'failure':2, 'early':3, 'idle':4}
         self.trial = 0
         self.up_to_date = True
     
-    def increment(self,state_name):
+    def increment(self,state_name,j):
         '''
         Called by task object, called whenever mice make a decision
         '''
@@ -606,6 +607,7 @@ class StatRec(object):
         self.buffer[0,i] = self.trial
         self.buffer[state,i] += 1
         self.buffer[5:9, i] = 100.0 * self.buffer[1:5,i] / self.trial
+        self.buffer[9,i] = j
         
     def write(self):
         '''
@@ -770,8 +772,19 @@ class OdorGen(object):
         '''
         chance = 250.0/interval
         dice = np.random.rand()
-        if self.on or dice > chance:
-            pass
+        if self.on:
+            return None
+        if dice > chance:
+            self.tick = 0
+            output_trace_disp = np.zeros(self.T)
+            output_trace = output_trace_disp
+            clean_trace = 88 - output_trace_disp
+            clean_trace = clean_trace.clip(0,100)
+            self.odor_buffer[0,:] = clean_trace
+            self.odor_buffer[channel,:] = output_trace
+            self.odor_buffer_disp[channel,:] = output_trace_disp
+            self.odor_buffer_disp[0,:] = clean_trace
+            self.on = True
         else:
             self.tick = 0 #reset tick
             output_trace_disp = np.zeros(self.T)
@@ -797,6 +810,7 @@ class TrainingTask(object):
         tick is for measuring time
         '''
         self.tick = 0
+        self.j = 0
         '''
         the correct side
         '''
@@ -833,6 +847,7 @@ class TrainingTask(object):
     
     def step(self,lick = 0):
         self.tick += 1
+        self.j +=1
         if self.state == self.state_dict['delay']:
             self.delay_step(lick)
         elif self.state == self.state_dict['go']:
@@ -890,7 +905,7 @@ class TrainingTask(object):
         if self.audio_on:
             if lick > 0:
                 self.tick = 0
-                self.stat_rec.increment('early')
+                self.stat_rec.increment('early',self.j)
                 self.side_rec.increment('early',self.side - 1)
                 self.sound.wrong()
                 self.set_state('punish')
@@ -921,7 +936,7 @@ class TrainingTask(object):
                     self.water_available = False
                     if self.audio_on:
                         self.sound.correct()
-                    self.stat_rec.increment('success')
+                    self.stat_rec.increment('success',self.j)
                     self.side_rec.increment('success',self.side - 1)
                     self.set_state('refract')
         else:
@@ -931,7 +946,7 @@ class TrainingTask(object):
                     self.water_available = False
                     if self.audio_on:
                         self.sound.correct()
-                    self.stat_rec.increment('success')
+                    self.stat_rec.increment('success',self.j)
                     self.side_rec.increment('success',self.side - 1)
                     if not self.random_lq.value():
                         self.trial += 1
@@ -940,16 +955,16 @@ class TrainingTask(object):
             if lick > 0 and lick != self.side:
                 if self.audio_on:
                     self.sound.wrong()
-                else:
-                    self.motor.settings.lick_position.update_value(False)
+#                 else:
+#                     self.motor.settings.lick_position.update_value(False)
                 self.set_state('punish')
-                self.stat_rec.increment('failure')
+                self.stat_rec.increment('failure',self.j)
                 self.side_rec.increment('failure',self.side - 1)
                 
         my_state = self.state_dict['go']
         if self.tick > self.duration[my_state]:
             self.set_state('refract')
-            self.stat_rec.increment('idle')
+            self.stat_rec.increment('idle',self.j)
             self.side_rec.increment('idle',self.side - 1)
             
     def refract_step(self, lick = 0):
@@ -960,8 +975,8 @@ class TrainingTask(object):
                 if not self.audio_on:
                     self.motor.settings.lick_position.update_value(False)
         else:
-            if lick == self.side:
-                self.set_state('refract')
+#             if lick == self.side:
+#                 self.set_state('refract')
             
             if self.audio_on:
                 if lick > 0 and lick != self.side:
@@ -982,4 +997,5 @@ class TrainingTask(object):
         my_state = self.state_dict['punish']
         if self.tick > self.duration[my_state]:
             self.sound.correct()
+            self.motor.settings.lick_position.update_value(False)
             self.set_state('delay')
