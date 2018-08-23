@@ -58,20 +58,20 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 3000, vmin = 500))
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 500, vmin = 0))
         exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
-        exp_settings.append(self.settings.New('refract', dtype = int, initial = 1500, vmin = 500)) 
-        exp_settings.append(self.settings.New('punish', dtype = int, initial = 3000)) 
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 3000, vmin = 0)) 
+        exp_settings.append(self.settings.New('punish', dtype = int, initial = 6000)) 
         
         
         exp_settings.append(self.settings.New('channel1', dtype = int, initial = 6)) 
         exp_settings.append(self.settings.New('channel2', dtype = int, initial = 6)) 
         exp_settings.append(self.settings.New('level1', dtype = int, initial = 100, vmin = 0, vmax = 100))
-        exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
+        exp_settings.append(self.settings.New('level2', dtype = int, initial = 60, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 300))
-        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 50))
+        exp_settings.append(self.settings.New('interval2', dtype = int, initial = 300))
         exp_settings.append(self.settings.New('kernel1', dtype = int, initial = 0,vmin=0,vmax=10000))
         exp_settings.append(self.settings.New('kernel2', dtype = int, initial = 250,vmin=0,vmax=10000))
         
@@ -439,8 +439,8 @@ class VOTABlockTrainingMeasure(Measurement):
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i,0:num_of_chan] = self.daq_ai.read_data()
 
-                lick_0 = (self.buffer[i,1]<4)
-                lick_1 = (self.buffer[i,2]<4)
+                lick_0 = (self.buffer[i,1]<3)
+                lick_1 = (self.buffer[i,2]<3)
                 self.buffer[i,1]=lick_0 #convert lick sensor into 0(no lick) and 1(lick)
                 self.buffer[i,2]=lick_1
                 
@@ -481,7 +481,7 @@ class VOTABlockTrainingMeasure(Measurement):
                             print(ex)
 
                 else:
-                    self.arduino_sol.load([88,0,0,0,0,0,0,0])
+                    self.arduino_sol.load([80,0,0,0,0,0,0,0])
                     pass
                 
                 '''
@@ -702,7 +702,7 @@ class OdorGen(object):
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = 88
+        default_output[0] = 80
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -758,7 +758,7 @@ class OdorGen(object):
         '''
         output to both solenoid valve buffer and display
         '''
-        clean_trace = 88 - output_trace_disp
+        clean_trace = 80 - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
         self.odor_buffer[0,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
@@ -778,7 +778,7 @@ class OdorGen(object):
             self.tick = 0
             output_trace_disp = np.zeros(self.T)
             output_trace = output_trace_disp
-            clean_trace = 88 - output_trace_disp
+            clean_trace = 80 - output_trace_disp
             clean_trace = clean_trace.clip(0,100)
             self.odor_buffer[0,:] = clean_trace
             self.odor_buffer[channel,:] = output_trace
@@ -790,7 +790,7 @@ class OdorGen(object):
             output_trace_disp = np.zeros(self.T)
             output_trace_disp[0:Tpulse] = level
             output_trace = output_trace_disp
-            clean_trace = 88 - output_trace_disp
+            clean_trace = 80 - output_trace_disp
             clean_trace = clean_trace.clip(0,100)
             self.odor_buffer[0,:] = clean_trace
             self.odor_buffer[channel,:] = output_trace
@@ -923,7 +923,10 @@ class TrainingTask(object):
                 self.motor.settings.lick_position.update_value(True)
             
             if self.free_drop:
-                self.water.give_water(self.side - 1)
+                if self.lick_training:
+                    self.water.give_water(0)
+                else:
+                    self.water.give_water(self.side - 1)
             self.set_state('go')
             
             
@@ -991,9 +994,8 @@ class TrainingTask(object):
                     self.motor.settings.lick_position.update_value(False)
         
     def punish_step(self, lick = 0):
-        if lick > 0:
-            self.set_state('punish')
-            
+#         if lick > 0:
+#             self.set_state('punish')         
         my_state = self.state_dict['punish']
         if self.tick > self.duration[my_state]:
             self.sound.correct()
