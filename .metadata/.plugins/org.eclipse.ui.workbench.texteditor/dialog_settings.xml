@@ -2,29 +2,30 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="set" key="selection"/>
+		<item value="pass" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="true" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="pass"/>
+			<item value="free_drop"/>
+			<item value="lick_train"/>
+			<item value="lick_training"/>
+			<item value="88"/>
+			<item value="stat_h4"/>
+			<item value="increment"/>
+			<item value="sniff_event"/>
+			<item value="sniff_eve"/>
+			<item value="refre"/>
 			<item value="set"/>
 			<item value="position_map"/>
 			<item value="position"/>
 			<item value="buffer"/>
 			<item value="odor_gen"/>
-			<item value="audio"/>
-			<item value="sound"/>
-			<item value="opera"/>
-			<item value="operation"/>
-			<item value="button"/>
-			<item value="camera"/>
-			<item value="frame"/>
-			<item value="f"/>
-			<item value="1024,1280,4"/>
-			<item value="self.frame"/>
 		</list>
 		<list key="replacehistory">
+			<item value="80"/>
 			<item value="dev"/>
 			<item value="np"/>
 		</list>
