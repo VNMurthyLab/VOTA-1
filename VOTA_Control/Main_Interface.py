@@ -39,6 +39,14 @@ class VOTAScopeApp(BaseMicroscopeApp):
         self.add_hardware(ArduinoOdometerHW(self))
         from VOTAScopeHW.arduino_motor.arduino_motor_hw import ArduinoMotorHW
         self.add_hardware(ArduinoMotorHW(self))
+        from VOTAScopeHW.flircam.flircam_hw import FLIRCamHW
+        #add microscope cam
+        micro_cam = FLIRCamHW(self)
+        micro_cam.settings.camera_sn.update_value('16363844')
+        micro_cam.name = 'micro_cam'
+        self.add_hardware(micro_cam)
+        from VOTAScopeHW.flircam.flirrec_hw import FLIRRecHW
+        self.add_hardware(FLIRRecHW(self))
         
         #Add measurement components
         print("Create Measurement objects")
@@ -83,5 +91,6 @@ if __name__ == '__main__':
     app.hardware['thorcam'].settings.connected.update_value(True)
     app.hardware['sound'].settings.connected.update_value(True)
     app.hardware['arduino_motor'].settings.connected.update_value(True)
-    
+    app.hardware['micro_cam'].settings.connected.update_value(True)
+    app.hardware['flirrec'].settings.connected.update_value(True)
     sys.exit(app.exec_())

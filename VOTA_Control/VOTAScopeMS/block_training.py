@@ -5,22 +5,49 @@ Created on Aug 9, 2017
 '''
 from math import sqrt
 from ScopeFoundry import Measurement
+from ScopeFoundry.measurement import MeasurementQThread
 from ScopeFoundry.helper_funcs import sibling_path, load_qt_ui_file
 from ScopeFoundry import h5_io
 import pyqtgraph as pg
 import numpy as np
 import time
 import os
+import queue
 from random import randint,random
 from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
 from blaze.expr.reductions import std
+from qtpy import QtCore
+
+class SubMeasurementQThread(MeasurementQThread):
+    '''
+    Sub-Thread for different loops in measurement
+    '''
+
+    def __init__(self, run_func, parent=None):
+        '''
+        run_func: user-defined function to run in the loop
+        parent = parent thread, usually None
+        '''
+        super(MeasurementQThread, self).__init__(parent)
+        self.run_func = run_func
+        self.interrupted = False
+  
+    def run(self):
+        while not self.interrupted:
+            self.run_func()
+            if self.interrupted:
+                break
+            
+    @QtCore.Slot()
+    def interrupt(self):
+        self.interrupted = True
             
 class VOTABlockTrainingMeasure(Measurement):
     
     # this is the name of the measurement that ScopeFoundry uses 
     # when displaying your measurement and saving data related to it    
     name = "block_training"
-    
+    interrupt_subthread = QtCore.Signal(())
     def setup(self):
         """
         Runs once during App initialization.
@@ -51,6 +78,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('free_drop', dtype = bool, initial = False)
         self.settings.New('sniff_lock', dtype = bool, initial = False)
         self.settings.New('threshold',dtype=float,initial = 0.6)
+        self.settings.New('clean_level',dtype=int, initial = 82)
         '''
         setting up experimental setting parameters for task
         '''
@@ -133,6 +161,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.odometer = self.app.hardware['arduino_odometer']
         self.motor = self.app.hardware['arduino_motor']
         self.kernel = np.zeros(250)
+        self.micro_cam = self.app.hardware['micro_cam']
 
     def setup_figure(self):
         """
@@ -201,6 +230,9 @@ class VOTABlockTrainingMeasure(Measurement):
         self.camera_layout=pg.GraphicsLayoutWidget()
         self.ui.camera_groupBox.layout().addWidget(self.camera_layout)
         
+        self.microscope_layout=pg.GraphicsLayoutWidget()
+        self.ui.microscope_groupBox.layout().addWidget(self.microscope_layout)
+        
         self.position_layout=pg.GraphicsLayoutWidget()
         self.ui.position_plot_groupBox.layout().addWidget(self.position_layout)
         # Create PlotItem object (a set of axes)  
@@ -211,9 +243,11 @@ class VOTABlockTrainingMeasure(Measurement):
         self.plot1 = self.graph_layout.addPlot(row=1,col=1,title="Lick")
         self.plot2 = self.graph_layout.addPlot(row=2,col=1,title="breathing")
         self.plot3 = self.graph_layout.addPlot(row=3,col=1,title="odor")
+        self.plot4 = self.graph_layout.addPlot(row=4,col=1,title="airflow")
 
         # Create PlotDataItem object ( a scatter plot on the axes )
         self.breathing_plot = self.plot2.plot([0])
+        self.airflow_plot = self.plot4.plot([0])
         self.lick_plot_0 = self.plot1.plot([0])
         self.lick_plot_1 = self.plot1.plot([1])
         self.odor_plot = []
@@ -247,6 +281,11 @@ class VOTABlockTrainingMeasure(Measurement):
         self.camera_image=pg.ImageItem()
         self.camera_view.addItem(self.camera_image)
         
+        self.microscope_view=pg.ViewBox()
+        self.microscope_layout.addItem(self.microscope_view)
+        self.microscope_image=pg.ImageItem()
+        self.microscope_view.addItem(self.microscope_image)
+        
         self.position_plot = self.position_layout.addPlot(title='Position')
         self.kernel_plot = self.position_layout.addPlot(title='kernel')
         self.position_map = self.position_plot.plot([0])
@@ -264,6 +303,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.lick_plot_0.setData(self.k+self.T,self.buffer[:,1]) 
         self.lick_plot_1.setData(self.k+self.T,self.buffer[:,2]) 
         self.breathing_plot.setData(self.k+self.T,self.buffer[:,0]) 
+        self.airflow_plot.setData(self.k+self.T,self.buffer[:,3]) 
         
         for i in range(8):
             self.odor_plot[i].setData(self.k + self.T, self.buffer[:,i+6])
@@ -283,10 +323,22 @@ class VOTABlockTrainingMeasure(Measurement):
         self.pos_y[-1] = self.odometer.settings.y.value()
         self.position_map.setData(self.pos_x,self.pos_y)
         
-        if self.settings.movie_on.value():
-            self.camera_image.setImage(self.camera.read())
-            if self.settings.save_movie.value():
-                self.camera.write()
+        #display microscope view
+        if not hasattr(self,'micro_disp_queue'):
+            pass
+        elif self.micro_disp_queue.empty():
+            pass
+        else:
+            try:
+                micro_disp_image = self.micro_disp_queue.get()
+                self.microscope_image.setImage(micro_disp_image)
+            except Exception as ex:
+                    print("Error: %s" % ex)
+                    
+#         if self.settings.movie_on.value():
+#             self.camera_image.setImage(self.camera.read())
+#             if self.settings.save_movie.value():
+#                 self.camera.write()
     
         #print(self.buffer_h5.size)
     
@@ -373,7 +425,7 @@ class VOTABlockTrainingMeasure(Measurement):
         '''
         if self.settings.train.value():
             kernel = np.load('D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeMS\\kernel.npy')
-            odorgen = OdorGen(T = self.settings.delay.value())
+            odorgen = OdorGen(clean_level = self.settings.clean_level, T = self.settings.delay.value())
             task = TrainingTask(audio_on = self.settings.audio_on.value(), water_hw = self.water, odor_gen = odorgen,
                                 sound_hw = self.sound,
                                 motor_hw = self.motor,
@@ -417,10 +469,22 @@ class VOTABlockTrainingMeasure(Measurement):
             self.daq_ai.start()
             
             # Will run forever until interrupt is called.
+
+            
             '''
-            Expand HDF5 buffer when necessary
+            start microscope capturing
             '''
+            self.micro_disp_queue = queue.Queue(1000)
+            self.micro_thread = SubMeasurementQThread(self.micro_action)
+            self.interrupt_subthread.connect(self.micro_thread.interrupt)
+            
+            self.micro_cam.start()
+            self.micro_thread.start()
+            
             while not self.interrupt_measurement_called:
+                '''
+                Expand HDF5 buffer when necessary
+                '''
                 i %= self.buffer.shape[0]
                 if self.settings['save_h5']:
                     if j>(self.buffer_h5.shape[0]-1):
@@ -481,7 +545,7 @@ class VOTABlockTrainingMeasure(Measurement):
                             print(ex)
 
                 else:
-                    self.arduino_sol.load([80,0,0,0,0,0,0,0])
+                    self.arduino_sol.load([self.settings.clean_level.value(),0,0,0,0,0,0])
                     pass
                 
                 '''
@@ -553,6 +617,7 @@ class VOTABlockTrainingMeasure(Measurement):
                     # Measurement thread. We must periodically check for
                     # an interrupt request
                     self.daq_ai.stop()
+                    self.interrupt_subthread.emit()
                     break
 
         finally:            
@@ -564,8 +629,10 @@ class VOTABlockTrainingMeasure(Measurement):
                 self.settings.movie_on.update_value(False)
                 time.sleep(0.1)
                 if self.settings.save_movie.value():
-                    self.camera.close_file()     
-                
+                    self.camera.close_file() 
+                        
+            self.micro_cam.stop()
+            del self.micro_disp_queue
             self.settings.save_h5.change_readonly(False)
             self.settings.save_movie.change_readonly(False)
             self.settings.train.change_readonly(False)
@@ -583,6 +650,15 @@ class VOTABlockTrainingMeasure(Measurement):
             self.kernel_line.setData(self.kernel)
         except Exception as ex:
             print(ex)
+            
+    def micro_action(self):
+        try:
+            micro_image = self.micro_cam.read()
+            micro_data = self.micro_cam._dev.to_numpy(micro_image)
+            micro_disp_data = np.copy(micro_data)
+            self.micro_disp_queue.put(np.fliplr(micro_disp_data.transpose()))
+        except Exception as ex:
+            print('Error: %s' % ex)
         
 class StatRec(object):
     '''
@@ -685,13 +761,14 @@ class OdorGen(object):
     Object generate a time series of odor
     '''
     
-    def __init__(self,nchan = 8, T = 3000):
+    def __init__(self, clean_level, nchan = 8, T = 3000):
         self.tick = 0 # millisecond time counter
         self.nchan = nchan #number of channels
         self.T = T # size of the output time series
         self.odor_buffer = np.zeros((self.nchan,self.T))
         self.odor_buffer_disp = np.zeros((self.nchan,self.T))
         self.on = False
+        self.clean_level = clean_level
     
     def reset(self):
         self.odor_buffer = np.zeros((self.nchan,self.T))
@@ -702,7 +779,7 @@ class OdorGen(object):
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = 80
+        default_output[0] = self.clean_level.value()
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -758,7 +835,7 @@ class OdorGen(object):
         '''
         output to both solenoid valve buffer and display
         '''
-        clean_trace = 80 - output_trace_disp
+        clean_trace = self.clean_level.value() - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
         self.odor_buffer[0,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
@@ -778,7 +855,7 @@ class OdorGen(object):
             self.tick = 0
             output_trace_disp = np.zeros(self.T)
             output_trace = output_trace_disp
-            clean_trace = 80 - output_trace_disp
+            clean_trace = self.clean_level.value() - output_trace_disp
             clean_trace = clean_trace.clip(0,100)
             self.odor_buffer[0,:] = clean_trace
             self.odor_buffer[channel,:] = output_trace
@@ -790,7 +867,7 @@ class OdorGen(object):
             output_trace_disp = np.zeros(self.T)
             output_trace_disp[0:Tpulse] = level
             output_trace = output_trace_disp
-            clean_trace = 80 - output_trace_disp
+            clean_trace = self.clean_level.value() - output_trace_disp
             clean_trace = clean_trace.clip(0,100)
             self.odor_buffer[0,:] = clean_trace
             self.odor_buffer[channel,:] = output_trace
@@ -871,7 +948,11 @@ class TrainingTask(object):
             switch side for if the number of trials reach the block number
             '''
             if self.random_lq.value():
-                self.side = np.random.randint(1,3)
+                dice = np.random.rand()
+                if dice<0.5:
+                    self.side = 2
+                else:
+                    self.side = 1
             else:
                 if self.trial >= self.block:
                     self.side = 3 - self.side
