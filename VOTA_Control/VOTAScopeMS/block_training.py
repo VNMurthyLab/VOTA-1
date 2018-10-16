@@ -69,6 +69,7 @@ class VOTABlockTrainingMeasure(Measurement):
         # All settings are automatically added to the Microscope user interface
         self.settings.New('save_h5', dtype=bool, initial=False)
         self.settings.New('train',dtype = bool, initial = False, ro = False)
+        self.settings.New('record_calcium',dtype = bool, initial = False, ro = False)
         self.settings.New('block_number', dtype = int, initial = 10)
         self.settings.New('save_movie', dtype=bool, initial=False,ro=False)
         self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
@@ -162,6 +163,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.motor = self.app.hardware['arduino_motor']
         self.kernel = np.zeros(250)
         self.micro_cam = self.app.hardware['micro_cam']
+        self.recorder = self.app.hardware['flirrec']
 
     def setup_figure(self):
         """
@@ -472,11 +474,25 @@ class VOTABlockTrainingMeasure(Measurement):
 
             
             '''
-            start microscope capturing
+            start microscope capturing, save video if necessary
+            
             '''
             self.micro_disp_queue = queue.Queue(1000)
             self.micro_thread = SubMeasurementQThread(self.micro_action)
             self.interrupt_subthread.connect(self.micro_thread.interrupt)
+            
+            if self.settings.record_calcium.value():
+                save_dir = self.app.settings.save_dir.value()
+                data_path = os.path.join(save_dir,self.app.settings.sample.value())
+                try:
+                    os.makedirs(data_path)
+                except OSError:
+                    print('directory already exist, writing to existing directory')
+    
+                frame_rate = self.micro_cam.settings.frame_rate.value()
+                self.recorder.settings.path.update_value(data_path)
+                
+                self.recorder.create_file('micro_mov',frame_rate)
             
             self.micro_cam.start()
             self.micro_thread.start()
@@ -633,6 +649,10 @@ class VOTABlockTrainingMeasure(Measurement):
                         
             self.micro_cam.stop()
             del self.micro_disp_queue
+            
+            if self.settings.record_calcium.value():
+                self.recorder.close()
+
             self.settings.save_h5.change_readonly(False)
             self.settings.save_movie.change_readonly(False)
             self.settings.train.change_readonly(False)
@@ -657,6 +677,8 @@ class VOTABlockTrainingMeasure(Measurement):
             micro_data = self.micro_cam._dev.to_numpy(micro_image)
             micro_disp_data = np.copy(micro_data)
             self.micro_disp_queue.put(np.fliplr(micro_disp_data.transpose()))
+            if self.settings.record_calcium.value():
+                self.recorder.save_frame('micro_mov',micro_image)
         except Exception as ex:
             print('Error: %s' % ex)
         
