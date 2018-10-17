@@ -4,3 +4,5 @@ VOTA_Control/data/
 VOTA_Control/VOTAScopeHW/sound/Spinnaker-ReleaseNotes.html
 VOTA_Control/VOTAScopeHW/sound/SpinnakerSDK_FULL_1.15.0.63_x64.exe
 VOTA_Control/VOTAScopeHW/flircam/__pycache__/
+VOTA_Control/VOTAScopeHW/daq_do/__pycache__/
+VOTA_Control/VOTAScopeHW/sound/__pycache__/

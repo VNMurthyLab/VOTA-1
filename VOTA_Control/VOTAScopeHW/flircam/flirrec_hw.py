@@ -18,7 +18,7 @@ class FLIRRecHW(HardwareComponent):
     def setup(self,camera_id = 0):
         initial_data_save_dir = os.path.abspath(os.path.join('.', 'data'))
         self.settings.New(name ='path', dtype = 'file', is_dir = True, initial = initial_data_save_dir)
-        self.settings.New(name = 'compress', dtype = bool, initial = True)
+        self.settings.New(name = 'compress', dtype = bool, initial = False)
         
     def connect(self):
         #connect to the camera device

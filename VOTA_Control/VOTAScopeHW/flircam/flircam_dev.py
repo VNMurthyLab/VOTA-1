@@ -128,11 +128,12 @@ class FLIRCamDev(object):
     '''
     Data operations
     '''
-    def read(self):
+    def read(self,timeout=2000):
         '''
         read and return the next frame from the camera
+        time out is timeout in milliseconds
         '''
-        image = self.cam.GetNextImage()
+        image = self.cam.GetNextImage(timeout)
         image_converted = image.Convert(PySpin.PixelFormat_Mono8,PySpin.HQ_LINEAR)
         image.Release()
         return image_converted
@@ -289,6 +290,7 @@ class FLIRCamDev(object):
 
         except PySpin.SpinnakerException as ex:
             print("Error: %s" % ex)
+            return 0
     
     def set_frame_rate(self,fr):
         '''
@@ -334,6 +336,77 @@ class FLIRCamDev(object):
                 self.cam.ExposureAuto.SetValue(PySpin.ExposureAuto_Continuous)
             else:
                 self.cam.ExposureAuto.SetValue(PySpin.ExposureAuto_Off)
+           
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def get_trigger_mode(self):
+        '''
+        get the status of trigger mode, either on or off
+        '''
+        try:
+            val = self.cam.TriggerMode.GetValue()
+            if val == PySpin.TriggerMode_On:
+                return True
+            elif val == PySpin.TriggerMode_Off:
+                return False
+            else:
+                print('Unable to get trigger mode setting')
+
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+    
+    def set_trigger_mode(self, mode):
+        '''
+        set the status of trigger mode, either on or off
+        
+        mode: boolean value of True(on) or False(off)
+        '''
+        try:
+            if self.cam.TriggerMode.GetAccessMode() != PySpin.RW:
+                print("Unable to enable automatic exposure (node retrieval). Non-fatal error...")
+                return None
+            
+            if mode:
+                self.cam.TriggerMode.SetValue(PySpin.TriggerMode_On)
+            else:
+                self.cam.TriggerMode.SetValue(PySpin.TriggerMode_Off)
+           
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def get_hardware_trigger(self):
+        '''
+        get the status of trigger, either True(Hardware) or False(Software)
+        '''
+        try:
+            val = self.cam.TriggerSource.GetValue()
+            
+            if val == PySpin.TriggerSource_Line0:
+                return True
+            elif val == PySpin.TriggerSource_Software:
+                return False
+            else:
+                print('Unable to get trigger setting setting',val)
+
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def set_hardware_trigger(self, mode):
+        '''
+        set the status of auto trigger, either hardware or software
+        
+        mode: boolean value of True(hardware) or False(software)
+        '''
+        try:
+            if self.cam.ExposureAuto.GetAccessMode() != PySpin.RW:
+                print("Unable to enable automatic exposure (node retrieval). Non-fatal error...")
+                return None
+            
+            if mode:
+                self.cam.TriggerSource.SetValue(PySpin.TriggerSource_Line0)
+            else:
+                self.cam.TriggerSource.SetValue(PySpin.TriggerSource_Software)
             
         except PySpin.SpinnakerException as ex:
             print("Error: %s" % ex)
@@ -360,7 +433,10 @@ class FLIRCamDev(object):
             Mode0 = node_video_mode.GetEntryByName("Mode0")
             Mode1 = node_video_mode.GetEntryByName("Mode1")
             Mode2 = node_video_mode.GetEntryByName("Mode2")
-            mode_list = [Mode0,Mode1,Mode2]
+            Mode3 = node_video_mode.GetEntryByName("Mode3")
+            Mode4 = node_video_mode.GetEntryByName("Mode4")
+            Mode5 = node_video_mode.GetEntryByName("Mode5")
+            mode_list = [Mode0,Mode1,Mode2,Mode3,Mode4,Mode5]
             
             node_video_mode.SetIntValue(mode_list[mode_number].GetValue())
         except PySpin.SpinnakerException as ex:
@@ -436,3 +512,11 @@ class FLIRCamDev(object):
                                 'BufferHandlingControl',
                                 'StreamDefaultBufferCount',
                                 str(value))
+        
+        
+if __name__=='__main__':
+    cam = FLIRCamDev('16363844')
+    print(cam.get_hardware_trigger())
+    cam.set_hardware_trigger(False)
+    print(cam.get_hardware_trigger())
+    cam.close()

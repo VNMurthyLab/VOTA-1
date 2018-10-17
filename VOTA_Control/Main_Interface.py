@@ -47,6 +47,8 @@ class VOTAScopeApp(BaseMicroscopeApp):
         self.add_hardware(micro_cam)
         from VOTAScopeHW.flircam.flirrec_hw import FLIRRecHW
         self.add_hardware(FLIRRecHW(self))
+        from VOTAScopeHW.daq_do.daq_do_hw import DAQdoHW
+        self.add_hardware(DAQdoHW(self))
         
         #Add measurement components
         print("Create Measurement objects")
@@ -93,4 +95,5 @@ if __name__ == '__main__':
     app.hardware['arduino_motor'].settings.connected.update_value(True)
     app.hardware['micro_cam'].settings.connected.update_value(True)
     app.hardware['flirrec'].settings.connected.update_value(True)
+    app.hardware['daq_do'].settings.connected.update_value(True)
     sys.exit(app.exec_())

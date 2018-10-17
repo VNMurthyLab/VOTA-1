@@ -21,10 +21,11 @@ class FLIRCamHW(HardwareComponent):
         self.settings.New(name = 'height', dtype = int, initial = 1200, ro = True)
         self.settings.New(name = 'auto_exposure', dtype = bool, initial = True, ro = False)
         self.settings.New(name = 'exposure_time', dtype = float, initial = 99379.72, ro = False)
-        self.settings.New(name = 'video_mode', dtype = int, initial = 0, ro = False, vmin = 0, vmax = 2)
+        self.settings.New(name = 'video_mode', dtype = int, initial = 0, ro = False, vmin = 0, vmax = 5)
+        
+        self.settings.New(name = 'trigger_mode',dtype=bool,initial=False)
+        self.settings.New(name = 'hardware_trigger',dtype=bool,initial=False)
         self.settings.New(name = 'frame_rate', dtype = float, initial = 10, ro = False, vmin = 0, vmax = 100)
-        
-        
                 
     def connect(self):
         #connect to the camera device
@@ -38,14 +39,19 @@ class FLIRCamHW(HardwareComponent):
         self.settings.exposure_time.hardware_read_func = self._dev.get_exp
         self.settings.video_mode.hardware_read_func = self._dev.get_video_mode
         self.settings.frame_rate.hardware_read_func = self._dev.get_frame_rate
+        self.settings.trigger_mode.hardware_read_func = self._dev.get_trigger_mode
+        self.settings.hardware_trigger.hardware_read_func = self._dev.get_hardware_trigger
         
         #define set functions
         self.settings.auto_exposure.hardware_set_func = self._dev.set_auto_exposure
         self.settings.exposure_time.hardware_set_func = self._dev.set_exp
         self.settings.video_mode.hardware_set_func = self._dev.set_video_mode
         self.settings.frame_rate.hardware_set_func = self._dev.set_frame_rate
+        self.settings.trigger_mode.hardware_set_func = self._dev.set_trigger_mode
+        self.settings.hardware_trigger.hardware_set_func = self._dev.set_hardware_trigger
         
         #read camera info
+        self.settings.trigger_mode.update_value(False)
         self.read_from_hardware()
         
         
@@ -56,8 +62,8 @@ class FLIRCamHW(HardwareComponent):
     def stop(self):
         self._dev.stop()
         
-    def read(self):
-        return self._dev.read()
+    def read(self,timeout=2000):
+        return self._dev.read(timeout)
     
     def empty(self):
         return self._dev.empty()
@@ -86,6 +92,8 @@ class FLIRCamHW(HardwareComponent):
             self.settings.exposure_time.hardware_set_func = None
             self.settings.video_mode.hardware_set_func = None
             self.settings.frame_rate.hardware_set_func = None
+            self.settings.trigger_mode.hardware_set_func = None
+            self.settings.hardware_trigger.hardware_set_func = None
             
             self._dev.close()
             del self._dev

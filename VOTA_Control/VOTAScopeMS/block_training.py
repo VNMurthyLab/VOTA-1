@@ -80,6 +80,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('sniff_lock', dtype = bool, initial = False)
         self.settings.New('threshold',dtype=float,initial = 0.6)
         self.settings.New('clean_level',dtype=int, initial = 82)
+        self.settings.New('frame_count',dtype=int, initial = 0, ro=True)
         '''
         setting up experimental setting parameters for task
         '''
@@ -164,7 +165,8 @@ class VOTABlockTrainingMeasure(Measurement):
         self.kernel = np.zeros(250)
         self.micro_cam = self.app.hardware['micro_cam']
         self.recorder = self.app.hardware['flirrec']
-
+        self.daq_do = self.app.hardware['daq_do']
+        
     def setup_figure(self):
         """
         Runs once during App initialization, after setup()
@@ -286,7 +288,12 @@ class VOTABlockTrainingMeasure(Measurement):
         self.microscope_view=pg.ViewBox()
         self.microscope_layout.addItem(self.microscope_view)
         self.microscope_image=pg.ImageItem()
+        self.microscope_histogram=pg.HistogramLUTItem()
+        self.microscope_histogram.setImageItem(self.microscope_image)
         self.microscope_view.addItem(self.microscope_image)
+        self.microscope_layout.addItem(self.microscope_histogram)
+        self.microscope_histogram.setHistogramRange(0,255)
+        self.microscope_histogram.setLevels(0,255)
         
         self.position_plot = self.position_layout.addPlot(title='Position')
         self.kernel_plot = self.position_layout.addPlot(title='kernel')
@@ -477,10 +484,21 @@ class VOTABlockTrainingMeasure(Measurement):
             start microscope capturing, save video if necessary
             
             '''
+            self.camera_i = 0
+            self.settings.frame_count.update_value(self.camera_i)
+            self.trigger_i = 0
+            
             self.micro_disp_queue = queue.Queue(1000)
             self.micro_thread = SubMeasurementQThread(self.micro_action)
             self.interrupt_subthread.connect(self.micro_thread.interrupt)
             
+            #if False:
+            if self.micro_cam.settings.trigger_mode.value():
+                self.trigger_queue = queue.Queue(1000)
+                self.trigger_thread = SubMeasurementQThread(self.trigger_action)
+                self.interrupt_subthread.connect(self.trigger_thread.interrupt)
+                self.trigger_thread.start()
+                
             if self.settings.record_calcium.value():
                 save_dir = self.app.settings.save_dir.value()
                 data_path = os.path.join(save_dir,self.app.settings.sample.value())
@@ -497,6 +515,7 @@ class VOTABlockTrainingMeasure(Measurement):
             self.micro_cam.start()
             self.micro_thread.start()
             
+            
             while not self.interrupt_measurement_called:
                 '''
                 Expand HDF5 buffer when necessary
@@ -507,7 +526,6 @@ class VOTABlockTrainingMeasure(Measurement):
                         self.buffer_h5.resize((self.buffer_h5.shape[0]+self.buffer.shape[0],self.buffer.shape[1]))
                         self.k +=10
                 
-
                 '''
                 Update Progress Bar
                 '''
@@ -518,7 +536,13 @@ class VOTABlockTrainingMeasure(Measurement):
                 '''
                 # Fills the buffer with sine wave readings from func_gen Hardware
                 self.buffer[i,0:num_of_chan] = self.daq_ai.read_data()
-
+                #start image capture if trigger is on
+                
+                #if False:
+                if self.micro_cam.settings.trigger_mode.value():
+                    if i % 100 == 0:
+                        self.trigger_queue.put(10)
+                    
                 lick_0 = (self.buffer[i,1]<3)
                 lick_1 = (self.buffer[i,2]<3)
                 self.buffer[i,1]=lick_0 #convert lick sensor into 0(no lick) and 1(lick)
@@ -573,14 +597,15 @@ class VOTABlockTrainingMeasure(Measurement):
                 '''     
                 Read and save Position and Speed at 25Hz(default) (3:position 4:speed)
                 '''
-                if i%20 == 0:
-                    self.odometer.read()
-                    self.buffer[j:(j+20),num_of_chan+10] = self.odometer.settings.x.value()
-                    self.buffer[j:(j+20),num_of_chan + 11] = self.odometer.settings.y.value()
+#                if i%20 == 0:
+#                    self.odometer.read()
+#                    self.buffer[j:(j+20),num_of_chan+10] = self.odometer.settings.x.value()
+#                    self.buffer[j:(j+20),num_of_chan + 11] = self.odometer.settings.y.value()
+
                 '''
-                Read odor value from the odor generator, otherwise fill with clean air(default)
+                Read Camera Frame Count
                 '''
-                    
+                self.buffer[i,num_of_chan + 10] = self.settings.frame_count.value()
                 '''
                 write odor value to valve
                 '''
@@ -607,7 +632,7 @@ class VOTABlockTrainingMeasure(Measurement):
                 
                 i += 1
                 j += 1
-               
+                
                 '''
                 update_statistics
                 '''
@@ -624,6 +649,12 @@ class VOTABlockTrainingMeasure(Measurement):
                     if self.settings['save_h5']:
                         self.side_stat_h5[:] = self.side_stat[:]
                         self.h5file.flush()
+                
+                if i % 5000 == 0:
+                    if self.daq_do.settings.light_switch.value():
+                        self.daq_do.settings.light_switch.update_value(False)
+                    else:
+                        self.daq_do.settings.light_switch.update_value(True)
                         
                 if self.interrupt_measurement_called:
                     # Listen for interrupt_measurement_called flag.
@@ -650,6 +681,9 @@ class VOTABlockTrainingMeasure(Measurement):
             self.micro_cam.stop()
             del self.micro_disp_queue
             
+            if self.micro_cam.settings.trigger_mode.value():
+                del self.trigger_queue
+            
             if self.settings.record_calcium.value():
                 self.recorder.close()
 
@@ -673,15 +707,30 @@ class VOTABlockTrainingMeasure(Measurement):
             
     def micro_action(self):
         try:
-            micro_image = self.micro_cam.read()
+            micro_image = self.micro_cam.read(timeout=1000)
             micro_data = self.micro_cam._dev.to_numpy(micro_image)
-            micro_disp_data = np.copy(micro_data)
-            self.micro_disp_queue.put(np.fliplr(micro_disp_data.transpose()))
+            if self.camera_i % 2 == 0:
+                micro_disp_data = np.copy(micro_data)
+                self.micro_disp_queue.put(np.fliplr(micro_disp_data.transpose()))
             if self.settings.record_calcium.value():
                 self.recorder.save_frame('micro_mov',micro_image)
+            self.camera_i +=1
+            self.settings.frame_count.update_value(self.camera_i)
+            #print('micro camera:', self.camera_i)
         except Exception as ex:
             print('Error: %s' % ex)
-        
+            
+    def trigger_action(self):
+        try:
+            self.trigger_queue.get()
+            self.daq_do.settings.camera_switch.update_value(True)
+            time.sleep(0.002)
+            self.daq_do.settings.camera_switch.update_value(False)
+            self.trigger_i += 1
+            print('trigger_i: ', self.trigger_i)
+        except Exception as ex:
+            print(ex)
+            
 class StatRec(object):
     '''
     Record mouse performance such as correct v.s. incorrect response
