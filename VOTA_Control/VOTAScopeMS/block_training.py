@@ -88,9 +88,9 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 3500, vmin = 0))
-        exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
-        exp_settings.append(self.settings.New('refract', dtype = int, initial = 6000, vmin = 0)) 
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 9000, vmin = 0))
+        exp_settings.append(self.settings.New('go', dtype = int, initial = 500)) 
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 500, vmin = 0)) 
         exp_settings.append(self.settings.New('punish', dtype = int, initial = 10000)) 
         
         
@@ -100,7 +100,7 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 250))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 500))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1000))
         exp_settings.append(self.settings.New('kernel1', dtype = int, initial = 0,vmin=0,vmax=10000))
         exp_settings.append(self.settings.New('kernel2', dtype = int, initial = 250,vmin=0,vmax=10000))
@@ -650,11 +650,11 @@ class VOTABlockTrainingMeasure(Measurement):
                         self.side_stat_h5[:] = self.side_stat[:]
                         self.h5file.flush()
                 
-                if i % 5000 == 0:
-                    if self.daq_do.settings.light_switch.value():
-                        self.daq_do.settings.light_switch.update_value(False)
-                    else:
-                        self.daq_do.settings.light_switch.update_value(True)
+#                 if i % 5000 == 0:
+#                     if self.daq_do.settings.light_switch.value():
+#                         self.daq_do.settings.light_switch.update_value(False)
+#                     else:
+#                         self.daq_do.settings.light_switch.update_value(True)
                         
                 if self.interrupt_measurement_called:
                     # Listen for interrupt_measurement_called flag.
