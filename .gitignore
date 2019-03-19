@@ -1,3 +1,6 @@
 .metadata/
 VOTA_Control/VOTAScopeMS/__pycache__/
 VOTA_Control/data/
+VOTA_Control/VOTAScopeHW/daq_do/__pycache__/daq_do_hw.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/daq_do/__pycache__/daq_do_dev.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/daq_do/__pycache__/__init__.cpython-35.pyc
