@@ -21,6 +21,8 @@ class VOTAScopeApp(BaseMicroscopeApp):
         print("Create Hardware objects")
         from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
         self.add_hardware(DAQaiHW(self))
+        from VOTAScopeHW.daq_do.daq_do_hw import DAQdoHW
+        self.add_hardware(DAQdoHW(self))
         from VOTAScopeHW.arduino_sol_8.arduino_sol_hw import ArduinoSolHW
         self.add_hardware(ArduinoSolHW(self))
 #         from VOTAScopeHW.odor_gen.odor_gen_hw import OdorGenHW
@@ -76,6 +78,7 @@ if __name__ == '__main__':
     app.ui.setWindowTitle("Virtual Odor Tracking Arena")
     
     app.hardware['daq_ai'].settings.connected.update_value(True)
+    app.hardware['daq_do'].settings.connected.update_value(True)
     app.hardware['arduino_sol'].settings.connected.update_value(True)
 #     app.hardware['odor_gen'].settings.connected.update_value(True)
     app.hardware['arduino_odometer'].settings.connected.update_value(True)

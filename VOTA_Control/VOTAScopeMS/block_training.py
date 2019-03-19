@@ -123,6 +123,7 @@ class VOTABlockTrainingMeasure(Measurement):
         '''
         # Convenient reference to the hardware used in the measurement
         self.daq_ai = self.app.hardware['daq_ai']
+        self.daq_do = self.app.hardware['daq_do']
         self.arduino_sol = self.app.hardware['arduino_sol']
         self.water=self.app.hardware['arduino_water']
         self.camera=self.app.hardware['thorcam']
@@ -369,6 +370,7 @@ class VOTABlockTrainingMeasure(Measurement):
             task = TrainingTask(audio_on = self.settings.audio_on.value(), water_hw = self.water, odor_gen = odorgen,
                                 sound_hw = self.sound,
                                 motor_hw = self.motor,
+                                do_hw = self.daq_do,
                                 stat_rec = statrec,
                                 side_rec = siderec,
                                 random_lq = self.settings.random,
@@ -488,10 +490,11 @@ class VOTABlockTrainingMeasure(Measurement):
                 Save hdf5 file
                 '''
                 if self.settings['save_h5']:
+                    if i == self.buffer.shape[0] - 1:
                     # if we are saving data to disk, copy data to H5 dataset
-                    self.buffer_h5[j,:] = self.buffer[i,:]
-                    # flush H5
-                    self.h5file.flush()
+                        self.buffer_h5[(j-self.buffer.shape[0]+1):(j+1),:] = self.buffer
+                    # flush H5 every 10s
+                        self.h5file.flush()
             
                 
                 # wait between readings.
@@ -510,13 +513,13 @@ class VOTABlockTrainingMeasure(Measurement):
                         self.stat_settings[counter].update_value(self.stat[counter,self.ntrials])
                     if self.settings['save_h5']:
                         self.stat_h5[:] = self.stat[:]
-                        self.h5file.flush()
+                        #self.h5file.flush()
                         
                 if not siderec.updated():
                     self.side_stat[:] = siderec.write()
                     if self.settings['save_h5']:
                         self.side_stat_h5[:] = self.side_stat[:]
-                        self.h5file.flush()
+                        #self.h5file.flush()
                         
                 if self.interrupt_measurement_called:
                     # Listen for interrupt_measurement_called flag.
@@ -728,7 +731,7 @@ class TrainingTask(object):
     task object control the state of the task, and also generate each task
     '''
     
-    def __init__(self, audio_on, water_hw, odor_gen, sound_hw, motor_hw, stat_rec, 
+    def __init__(self, audio_on, water_hw, odor_gen, sound_hw, motor_hw, do_hw, stat_rec, 
                  side_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, go = 5000, refract = 2000, punish = 5000, lick_training = False, free_drop = False):
         '''
         tick is for measuring time
@@ -746,6 +749,7 @@ class TrainingTask(object):
         self.odor_gen = odor_gen
         self.sound = sound_hw
         self.motor = motor_hw
+        self.do_hw = do_hw
         self.stat_rec = stat_rec
         self.side_rec = side_rec
         self.random_lq = random_lq
@@ -805,6 +809,9 @@ class TrainingTask(object):
             '''
             if not self.lick_training:
                 self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
+            self.do_hw.settings.on.update_value(True)
+        else:
+            self.do_hw.settings.on.update_value(False)
                 
         
     def set_stimuli(self,side = 1, channel = 4, level = 30, Tpulse = 50, interval = 2000):
