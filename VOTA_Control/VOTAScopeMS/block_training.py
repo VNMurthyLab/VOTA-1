@@ -620,10 +620,11 @@ class VOTABlockTrainingMeasure(Measurement):
                 Save hdf5 file
                 '''
                 if self.settings['save_h5']:
+                    if i == self.buffer.shape[0] - 1:
                     # if we are saving data to disk, copy data to H5 dataset
-                    self.buffer_h5[j,:] = self.buffer[i,:]
-                    # flush H5
-                    self.h5file.flush()
+                        self.buffer_h5[(j-self.buffer.shape[0]+1):(j+1),:] = self.buffer
+                    # flush H5 every 10s
+                        self.h5file.flush()
             
                 
                 # wait between readings.
