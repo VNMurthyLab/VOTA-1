@@ -50,6 +50,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('lick_training',dtype=bool,initial=False)
         self.settings.New('free_drop', dtype = bool, initial = False)
         self.settings.New('threshold',dtype=float,initial = 0.3)
+        self.settings.New('clean_level',dtype= int, initial = 82,vmin=50,vmax=100)
         '''
         setting up experimental setting parameters for task
         '''
@@ -366,7 +367,7 @@ class VOTABlockTrainingMeasure(Measurement):
         create odor generator and task object
         '''
         if self.settings.train.value():
-            odorgen = OdorGen(T = self.settings.delay.value())
+            odorgen = OdorGen(T = self.settings.delay.value(),clean_level=self.settings.clean_level)
             task = TrainingTask(audio_on = self.settings.audio_on.value(), water_hw = self.water, odor_gen = odorgen,
                                 sound_hw = self.sound,
                                 motor_hw = self.motor,
@@ -462,16 +463,16 @@ class VOTABlockTrainingMeasure(Measurement):
                     self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
                     self.arduino_sol.load(odor)
                 else:
-                    self.arduino_sol.load([88,0,0,0,0,0,0,0])
+                    self.arduino_sol.load([self.settings.clean_level.value(),0,0,0,0,0,0,0])
                     pass
 
                 '''
                 Read and save Position and Speed at 25Hz(default) (3:position 4:speed)
                 '''
-                if i%20 == 0:
-                    self.odometer.read()
-                    self.buffer[j:(j+20),num_of_chan+10] = self.odometer.settings.x.value()
-                    self.buffer[j:(j+20),num_of_chan + 11] = self.odometer.settings.y.value()
+#                 if i%20 == 0:
+#                     self.odometer.read()
+#                     self.buffer[j:(j+20),num_of_chan+10] = self.odometer.settings.x.value()
+#                     self.buffer[j:(j+20),num_of_chan + 11] = self.odometer.settings.y.value()
                 '''
                 Read odor value from the odor generator, otherwise fill with clean air(default)
                 '''
@@ -650,20 +651,20 @@ class OdorGen(object):
     Object generate a time series of odor
     '''
     
-    def __init__(self,nchan = 8, T = 3000):
+    def __init__(self,nchan = 8, T = 3000,clean_level=None):
         self.tick = 0 # millisecond time counter
         self.nchan = nchan #number of channels
         self.T = T # size of the output time series
         self.odor_buffer = np.zeros((self.nchan,self.T))
         self.odor_buffer_disp = np.zeros((self.nchan,self.T))
         self.on = False
-    
+        self.clean_level = clean_level
     def step(self):
         '''
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = 88
+        default_output[0] = self.clean_level.value()
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -719,7 +720,7 @@ class OdorGen(object):
         '''
         output to both solenoid valve buffer and display
         '''
-        clean_trace = 88 - output_trace_disp
+        clean_trace = self.clean_level.value() - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
         self.odor_buffer[0,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
@@ -792,6 +793,7 @@ class TrainingTask(object):
             '''
             switch side for if the number of trials reach the block number
             '''
+            self.motor.settings.lick_position.update_value(False)
             if self.random_lq.value():
                 self.side = np.random.randint(1,3)
             else:
@@ -876,7 +878,8 @@ class TrainingTask(object):
                 if self.audio_on:
                     self.sound.wrong()
                 else:
-                    self.motor.settings.lick_position.update_value(False)
+                    #self.motor.settings.lick_position.update_value(False)
+                    pass
                 self.set_state('punish')
                 self.stat_rec.increment('failure')
                 self.side_rec.increment('failure',self.side - 1)
@@ -895,8 +898,7 @@ class TrainingTask(object):
                 if not self.audio_on:
                     self.motor.settings.lick_position.update_value(False)
         else:
-            if lick == self.side:
-                self.set_state('refract')
+            pass
             
             if self.audio_on:
                 if lick > 0 and lick != self.side:
@@ -911,8 +913,8 @@ class TrainingTask(object):
                     self.motor.settings.lick_position.update_value(False)
         
     def punish_step(self, lick = 0):
-        if lick > 0:
-            self.set_state('punish')
+#         if lick > 0:
+#             self.set_state('punish')
             
         my_state = self.state_dict['punish']
         if self.tick > self.duration[my_state]:

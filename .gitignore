@@ -4,3 +4,9 @@ VOTA_Control/data/
 VOTA_Control/VOTAScopeHW/daq_do/__pycache__/daq_do_hw.cpython-35.pyc
 VOTA_Control/VOTAScopeHW/daq_do/__pycache__/daq_do_dev.cpython-35.pyc
 VOTA_Control/VOTAScopeHW/daq_do/__pycache__/__init__.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/sound/__pycache__/__init__.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/flircam/__pycache__/flirrec_hw.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/flircam/__pycache__/flirrec_dev.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/flircam/__pycache__/flircam_hw.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/flircam/__pycache__/flircam_dev.cpython-35.pyc
+VOTA_Control/VOTAScopeHW/flircam/__pycache__/__init__.cpython-35.pyc
