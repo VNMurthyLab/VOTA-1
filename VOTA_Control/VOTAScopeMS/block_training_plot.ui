@@ -461,6 +461,58 @@ background-color: rgb(148, 148, 148);</string>
      </layout>
     </widget>
    </item>
+   <item row="0" column="3" rowspan="2">
+    <widget class="QGroupBox" name="position_plot_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>200</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>400</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="title">
+      <string>Position Map</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_4"/>
+    </widget>
+   </item>
+   <item row="2" column="0" rowspan="2" colspan="4">
+    <widget class="QGroupBox" name="plot_groupBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(255, 255, 255);</string>
+     </property>
+     <property name="title">
+      <string>Plot</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3"/>
+    </widget>
+   </item>
    <item row="0" column="1" rowspan="2" colspan="2">
     <widget class="QGroupBox" name="control_1groupBox">
      <property name="sizePolicy">
@@ -511,16 +563,6 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label">
-        <property name="styleSheet">
-         <string>color: rgb(255, 85, 0);</string>
-        </property>
-        <property name="text">
-         <string>delay</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="label_2">
         <property name="styleSheet">
@@ -528,6 +570,16 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="text">
          <string>go</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label">
+        <property name="styleSheet">
+         <string>color: rgb(255, 85, 0);</string>
+        </property>
+        <property name="text">
+         <string>delay</string>
         </property>
        </widget>
       </item>
@@ -605,13 +657,13 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="5" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="refract_doubleSpinBox">
+      <item row="4" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="go_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 127);</string>
+         <string notr="true">color: rgb(0, 255, 0);</string>
         </property>
         <property name="suffix">
          <string>ms</string>
@@ -621,13 +673,13 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="go_doubleSpinBox">
+      <item row="5" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="refract_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color: rgb(255, 255, 127);</string>
         </property>
         <property name="suffix">
          <string>ms</string>
@@ -653,6 +705,22 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
+      <item row="10" column="2">
+       <widget class="QDoubleSpinBox" name="interval2_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
       <item row="7" column="1">
        <widget class="QDoubleSpinBox" name="channel1_doubleSpinBox">
         <property name="enabled">
@@ -669,19 +737,10 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="2">
-       <widget class="QDoubleSpinBox" name="interval2_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>channel</string>
         </property>
        </widget>
       </item>
@@ -701,24 +760,10 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>channel</string>
-        </property>
-       </widget>
-      </item>
       <item row="8" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>level</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Tpulse</string>
         </property>
        </widget>
       </item>
@@ -736,6 +781,13 @@ background-color: rgb(148, 148, 148);</string>
        <widget class="QLabel" name="label_8">
         <property name="text">
          <string>interval</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Tpulse</string>
         </property>
        </widget>
       </item>
@@ -769,59 +821,85 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
+      <item row="11" column="1">
+       <widget class="QDoubleSpinBox" name="lower_bound1_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="2">
+       <widget class="QDoubleSpinBox" name="lower_bound2_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1">
+       <widget class="QDoubleSpinBox" name="higher_bound1_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="2">
+       <widget class="QDoubleSpinBox" name="higher_bound2_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_33">
+        <property name="text">
+         <string>lower bound</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLabel" name="label_34">
+        <property name="text">
+         <string>higher bound</string>
+        </property>
+       </widget>
+      </item>
      </layout>
-    </widget>
-   </item>
-   <item row="2" column="0" rowspan="2" colspan="4">
-    <widget class="QGroupBox" name="plot_groupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: rgb(255, 255, 255);</string>
-     </property>
-     <property name="title">
-      <string>Plot</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3"/>
-    </widget>
-   </item>
-   <item row="0" column="3" rowspan="2">
-    <widget class="QGroupBox" name="position_plot_groupBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>200</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>400</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color: rgb(255, 255, 255);</string>
-     </property>
-     <property name="title">
-      <string>Position Map</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4"/>
     </widget>
    </item>
   </layout>

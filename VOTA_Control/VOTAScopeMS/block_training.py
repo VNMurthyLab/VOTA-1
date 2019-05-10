@@ -58,10 +58,10 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 3000, vmin = 500))
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 5000, vmin = 500))
         exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
-        exp_settings.append(self.settings.New('refract', dtype = int, initial = 1500, vmin = 500)) 
-        exp_settings.append(self.settings.New('punish', dtype = int, initial = 3000)) 
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 2500, vmin = 500)) 
+        exp_settings.append(self.settings.New('punish', dtype = int, initial = 10000)) 
         
         
         exp_settings.append(self.settings.New('channel1', dtype = int, initial = 6)) 
@@ -70,9 +70,12 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 300))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 400))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
-        
+        exp_settings.append(self.settings.New('lower_bound1', dtype = float, initial = 9.5))
+        exp_settings.append(self.settings.New('lower_bound2', dtype = float, initial = 0.5))
+        exp_settings.append(self.settings.New('higher_bound1', dtype = float, initial = 500))
+        exp_settings.append(self.settings.New('higher_bound2', dtype = float, initial = 9.5))       
         
 
         self.exp_settings = exp_settings
@@ -388,12 +391,16 @@ class VOTABlockTrainingMeasure(Measurement):
                              channel = self.settings.channel1.value(),
                              level = self.settings.level1.value(),
                              Tpulse = self.settings.Tpulse1.value(),
-                             interval = self.settings.interval1.value())
+                             interval = self.settings.interval1.value(),
+                             lower_bound = self.settings.lower_bound1.value(),
+                             higher_bound = self.settings.higher_bound1.value())
             task.set_stimuli(side = 2,
                              channel = self.settings.channel2.value(),
                              level = self.settings.level2.value(),
                              Tpulse = self.settings.Tpulse2.value(),
-                             interval = self.settings.interval2.value())
+                             interval = self.settings.interval2.value(),
+                             lower_bound = self.settings.lower_bound2.value(),
+                             higher_bound = self.settings.higher_bound2.value())
         '''
         start actual protocol
         '''
@@ -463,7 +470,7 @@ class VOTABlockTrainingMeasure(Measurement):
                     self.buffer[i,(num_of_chan+2):(num_of_chan + 10)] = odor_disp
                     self.arduino_sol.load(odor)
                 else:
-                    self.arduino_sol.load([self.settings.clean_level.value(),0,0,0,0,0,0,0])
+                    self.arduino_sol.load([0,0,0,0,self.settings.clean_level.value(),0,0,0])
                     pass
 
                 '''
@@ -618,13 +625,15 @@ class SideRec(object):
         
         if state_name == 'success':
             state = 3
+            self.buffer[state+side,i] += 1
         elif state_name == 'failure':
             state = 5
+            self.buffer[state+side,i] += 1
         else:
-            return #no side picked
+            pass #no side picked
         
         self.buffer[1+side,i] += 1
-        self.buffer[state+side,i] += 1
+        
         
         if self.buffer[1,i]>0:
             self.buffer[7, i] = 100.0 * self.buffer[3,i] / self.buffer[1,i]
@@ -664,7 +673,7 @@ class OdorGen(object):
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = self.clean_level.value()
+        default_output[4] = self.clean_level.value()
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -677,15 +686,13 @@ class OdorGen(object):
             return default_output,default_output
             
     
-    def new_trial(self, channel = 4, level = 30, Tpulse = 50, interval = 2000, std = 1):
+    def new_trial(self, channel = 4, level = 30, Tpulse = 50, interval = 2000, low_bound = 1, high_bound = 100):
         '''
         generate new time series
         called from a task
         '''
         self.tick = 0 #reset tick
         
-        low_bound = 1.0 * self.T / interval - std
-        high_bound = 1.0 * self.T / interval + std
         total_count = 0
         
         '''
@@ -722,7 +729,7 @@ class OdorGen(object):
         '''
         clean_trace = self.clean_level.value() - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
-        self.odor_buffer[0,:] = clean_trace
+        self.odor_buffer[4,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
         self.odor_buffer_disp[channel,:] = output_trace_disp
         self.on = True
@@ -765,6 +772,8 @@ class TrainingTask(object):
         self.level = [0,0]
         self.Tpulse = [100,100]
         self.interval = [500,500]
+        self.lower_bound = [0,0]
+        self.higher_bound = [200,200]
         
         self.state_dict = {'delay':0,'go':1,'refract':2,'punish':3}
         self.state = 2
@@ -810,18 +819,20 @@ class TrainingTask(object):
             delivery odor if not in lick training, otherwise do not deliver
             '''
             if not self.lick_training:
-                self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side])
+                self.odor_gen.new_trial(self.channel[side],self.level[side],self.Tpulse[side],self.interval[side],self.lower_bound[side],self.higher_bound[side])
             self.do_hw.settings.on.update_value(True)
         else:
             self.do_hw.settings.on.update_value(False)
                 
         
-    def set_stimuli(self,side = 1, channel = 4, level = 30, Tpulse = 50, interval = 2000):
+    def set_stimuli(self,side = 1, channel = 4, level = 30, Tpulse = 50, interval = 2000, lower_bound = 0, higher_bound = 200):
         side = side - 1
         self.channel[side] = channel
         self.level[side] = level
         self.Tpulse[side] = Tpulse
         self.interval[side] = interval
+        self.lower_bound[side] = lower_bound
+        self.higher_bound[side] = higher_bound
         
     def delay_step(self, lick = 0):
         if self.audio_on:
