@@ -585,7 +585,7 @@ class VOTABlockTrainingMeasure(Measurement):
                             print(ex)
 
                 else:
-                    self.arduino_sol.load([self.settings.clean_level.value(),0,0,0,0,0,0])
+                    self.arduino_sol.load([0,0,0,0,self.settings.clean_level.value(),0,0,0])
                     pass
                 
                 '''
@@ -851,7 +851,7 @@ class OdorGen(object):
         output the next odor level in the time series
         '''
         default_output = np.zeros((self.nchan,))
-        default_output[0] = self.clean_level.value()
+        default_output[4] = self.clean_level.value()
         if self.on:
             if self.tick < self.T -1:
                 self.tick += 1 
@@ -909,7 +909,7 @@ class OdorGen(object):
         '''
         clean_trace = self.clean_level.value() - output_trace_disp
         clean_trace = clean_trace.clip(0,100)
-        self.odor_buffer[0,:] = clean_trace
+        self.odor_buffer[4,:] = clean_trace
         self.odor_buffer[channel,:] = output_trace
         self.odor_buffer_disp[channel,:] = output_trace_disp
         self.on = True
@@ -929,7 +929,7 @@ class OdorGen(object):
             output_trace = output_trace_disp
             clean_trace = self.clean_level.value() - output_trace_disp
             clean_trace = clean_trace.clip(0,100)
-            self.odor_buffer[0,:] = clean_trace
+            self.odor_buffer[4,:] = clean_trace
             self.odor_buffer[channel,:] = output_trace
             self.odor_buffer_disp[channel,:] = output_trace_disp
             self.odor_buffer_disp[0,:] = clean_trace
@@ -941,7 +941,7 @@ class OdorGen(object):
             output_trace = output_trace_disp
             clean_trace = self.clean_level.value() - output_trace_disp
             clean_trace = clean_trace.clip(0,100)
-            self.odor_buffer[0,:] = clean_trace
+            self.odor_buffer[4,:] = clean_trace
             self.odor_buffer[channel,:] = output_trace
             self.odor_buffer_disp[channel,:] = output_trace_disp
             self.on = True
