@@ -72,10 +72,10 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('interval1', dtype = int, initial = 400))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1200))
-        exp_settings.append(self.settings.New('lower_bound1', dtype = float, initial = 9.5))
+        exp_settings.append(self.settings.New('lower_bound1', dtype = float, initial = 7.5))
         exp_settings.append(self.settings.New('lower_bound2', dtype = float, initial = 0.5))
         exp_settings.append(self.settings.New('higher_bound1', dtype = float, initial = 500))
-        exp_settings.append(self.settings.New('higher_bound2', dtype = float, initial = 9.5))       
+        exp_settings.append(self.settings.New('higher_bound2', dtype = float, initial = 7.5))       
         
 
         self.exp_settings = exp_settings
