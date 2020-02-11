@@ -223,12 +223,60 @@ class FLIRCamDev(object):
                 return node_width.GetValue()
         except PySpin.SpinnakerException as ex:
             print("Error: %s" % ex)
+            
+    def set_width(self,val):
+        try:
+            node_width = PySpin.CIntegerPtr(self.nodemap.GetNode("Width"))
+            if PySpin.IsAvailable(node_width):
+                return node_width.SetValue(int(val/4)*4)
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
     
     def get_height(self):
         try:
             node_height = PySpin.CIntegerPtr(self.nodemap.GetNode("Height"))
             if PySpin.IsAvailable(node_height):
                 return node_height.GetValue()
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def set_height(self,val):
+        try:
+            node_height = PySpin.CIntegerPtr(self.nodemap.GetNode("Height"))
+            if PySpin.IsAvailable(node_height):
+                return node_height.SetValue(int(val/4)*4)
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def get_offset_x(self):
+        try:
+            node_width = PySpin.CIntegerPtr(self.nodemap.GetNode("OffsetX"))
+            if PySpin.IsAvailable(node_width):
+                return node_width.GetValue()
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def set_offset_x(self,val):
+        try:
+            node_width = PySpin.CIntegerPtr(self.nodemap.GetNode("OffsetX"))
+            if PySpin.IsAvailable(node_width):
+                return node_width.SetValue(int(val/4)*4)
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+    
+    def get_offset_y(self):
+        try:
+            node_height = PySpin.CIntegerPtr(self.nodemap.GetNode("OffsetY"))
+            if PySpin.IsAvailable(node_height):
+                return node_height.GetValue()
+        except PySpin.SpinnakerException as ex:
+            print("Error: %s" % ex)
+            
+    def set_offset_y(self,val):
+        try:
+            node_height = PySpin.CIntegerPtr(self.nodemap.GetNode("OffsetY"))
+            if PySpin.IsAvailable(node_height):
+                return node_height.SetValue(int(val/4)*4)
         except PySpin.SpinnakerException as ex:
             print("Error: %s" % ex)
             
@@ -420,6 +468,7 @@ class FLIRCamDev(object):
             return int(node_video_mode.GetCurrentEntry().GetSymbolic()[4])
         except PySpin.SpinnakerException as ex:
             print("Error: %s" % ex)
+            return 0
             
     def set_video_mode(self,mode_number):
         '''

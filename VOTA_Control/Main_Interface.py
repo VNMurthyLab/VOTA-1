@@ -44,9 +44,11 @@ class VOTAScopeApp(BaseMicroscopeApp):
         micro_cam = FLIRCamHW(self)
         micro_cam.settings.camera_sn.update_value('16363844')
         micro_cam.name = 'micro_cam'
+        self.add_hardware(micro_cam)
         lick_cam = FLIRCamHW(self)
         lick_cam.settings.camera_sn.update_value('19060525')
-        self.add_hardware(micro_cam)
+        lick_cam.name = 'lick_cam'
+        self.add_hardware(lick_cam)
         from VOTAScopeHW.flircam.flirrec_hw import FLIRRecHW
         self.add_hardware(FLIRRecHW(self))
         from VOTAScopeHW.daq_do.daq_do_hw import DAQdoHW
@@ -96,6 +98,7 @@ if __name__ == '__main__':
     app.hardware['sound'].settings.connected.update_value(True)
     app.hardware['arduino_motor'].settings.connected.update_value(True)
 #     app.hardware['micro_cam'].settings.connected.update_value(True)
-#     app.hardware['flirrec'].settings.connected.update_value(True)
+    app.hardware['lick_cam'].settings.connected.update_value(True)
+    app.hardware['flirrec'].settings.connected.update_value(True)
     app.hardware['daq_do'].settings.connected.update_value(True)
     sys.exit(app.exec_())
