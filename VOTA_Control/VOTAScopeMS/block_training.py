@@ -326,23 +326,23 @@ class VOTABlockTrainingMeasure(Measurement):
         '''
         update position
         '''
-        self.pos_x[0:-1] = self.pos_x[1:]
-        self.pos_y[0:-1] = self.pos_x[1:]
-        self.pos_x[-1] = self.odometer.settings.x.value()
-        self.pos_y[-1] = self.odometer.settings.y.value()
-        self.position_map.setData(self.pos_x,self.pos_y)
+#         self.pos_x[0:-1] = self.pos_x[1:]
+#         self.pos_y[0:-1] = self.pos_x[1:]
+#         self.pos_x[-1] = self.odometer.settings.x.value()
+#         self.pos_y[-1] = self.odometer.settings.y.value()
+#         self.position_map.setData(self.pos_x,self.pos_y)
         
-        #display microscope view
-        if not hasattr(self,'micro_disp_queue'):
-            pass
-        elif self.micro_disp_queue.empty():
-            pass
-        else:
-            try:
-                micro_disp_image = self.micro_disp_queue.get()
-                self.microscope_image.setImage(micro_disp_image)
-            except Exception as ex:
-                    print("Error: %s" % ex)
+#         #display microscope view
+#         if not hasattr(self,'micro_disp_queue'):
+#             pass
+#         elif self.micro_disp_queue.empty():
+#             pass
+#         else:
+#             try:
+#                 micro_disp_image = self.micro_disp_queue.get()
+#                 self.microscope_image.setImage(micro_disp_image)
+#             except Exception as ex:
+#                     print("Error: %s" % ex)
                     
 #         if self.settings.movie_on.value():
 #             self.camera_image.setImage(self.camera.read())
@@ -512,8 +512,8 @@ class VOTABlockTrainingMeasure(Measurement):
                 
                 self.recorder.create_file('micro_mov',frame_rate)
             
-            self.micro_cam.start()
-            self.micro_thread.start()
+#             self.micro_cam.start()
+#             self.micro_thread.start()
             
             
             while not self.interrupt_measurement_called:
@@ -679,7 +679,7 @@ class VOTABlockTrainingMeasure(Measurement):
                 if self.settings.save_movie.value():
                     self.camera.close_file() 
                         
-            self.micro_cam.stop()
+#             self.micro_cam.stop()
             del self.micro_disp_queue
             
             if self.micro_cam.settings.trigger_mode.value():
@@ -707,30 +707,32 @@ class VOTABlockTrainingMeasure(Measurement):
             print(ex)
             
     def micro_action(self):
-        try:
-            micro_image = self.micro_cam.read(timeout=1000)
-            micro_data = self.micro_cam._dev.to_numpy(micro_image)
-            if self.camera_i % 2 == 0:
-                micro_disp_data = np.copy(micro_data)
-                self.micro_disp_queue.put(np.fliplr(micro_disp_data.transpose()))
-            if self.settings.record_calcium.value():
-                self.recorder.save_frame('micro_mov',micro_image)
-            self.camera_i +=1
-            self.settings.frame_count.update_value(self.camera_i)
-            #print('micro camera:', self.camera_i)
-        except Exception as ex:
-            print('Error: %s' % ex)
+#         try:
+#             micro_image = self.micro_cam.read(timeout=1000)
+#             micro_data = self.micro_cam._dev.to_numpy(micro_image)
+#             if self.camera_i % 2 == 0:
+#                 micro_disp_data = np.copy(micro_data)
+#                 self.micro_disp_queue.put(np.fliplr(micro_disp_data.transpose()))
+#             if self.settings.record_calcium.value():
+#                 self.recorder.save_frame('micro_mov',micro_image)
+#             self.camera_i +=1
+#             self.settings.frame_count.update_value(self.camera_i)
+#             #print('micro camera:', self.camera_i)
+#         except Exception as ex:
+#             print('Error: %s' % ex)
+        pass
             
     def trigger_action(self):
-        try:
-            self.trigger_queue.get()
-            self.daq_do.settings.camera_switch.update_value(True)
-            time.sleep(0.002)
-            self.daq_do.settings.camera_switch.update_value(False)
-            self.trigger_i += 1
-            print('trigger_i: ', self.trigger_i)
-        except Exception as ex:
-            print(ex)
+#         try:
+#             self.trigger_queue.get()
+#             self.daq_do.settings.camera_switch.update_value(True)
+#             time.sleep(0.002)
+#             self.daq_do.settings.camera_switch.update_value(False)
+#             self.trigger_i += 1
+#             print('trigger_i: ', self.trigger_i)
+#         except Exception as ex:
+#             print(ex)
+        pass
             
 class StatRec(object):
     '''
