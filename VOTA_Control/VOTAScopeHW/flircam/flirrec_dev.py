@@ -16,16 +16,18 @@ class Recorder(object):
     '''
     PySpin AVI recorder binding
     '''
-    def __init__(self, fname, frame_rate, compress = True):
+    def __init__(self, fname, frame_rate, compress = True, width = 1024, height = 1024):
         self.fname = fname
         self.frame_rate = frame_rate
         
         #setup option for AVIRecorder
         if compress:
-            chosenAviType = AviType.MJPG
-            option = PySpin.MJPGOption()
+            chosenAviType = AviType.H264
+            option = PySpin.H264Option()
             option.frameRate = self.frame_rate
-            option.quality = 75
+            option.bitrate = 2560000
+            option.height = height
+            option.width = width
         else:
             chosenAviType = AviType.UNCOMPRESSED
             option = PySpin.AVIOption()
@@ -69,9 +71,9 @@ class FLIRRecDev(object):
     def set_path(self,path):
         self.path = path
     
-    def create_file(self, name, frame_rate, compress = True):
+    def create_file(self, name, frame_rate, compress = True, width = 1024, height = 1024):
         fname = os.path.join(self.path,name)
-        self.recorder[name] = Recorder(fname, frame_rate, compress)
+        self.recorder[name] = Recorder(fname, frame_rate, compress, width, height)
         
     def save_frame(self,name, image):
         if name in self.recorder:

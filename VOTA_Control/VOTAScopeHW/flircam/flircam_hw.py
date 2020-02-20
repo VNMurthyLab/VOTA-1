@@ -17,12 +17,12 @@ class FLIRCamHW(HardwareComponent):
     def setup(self,camera_sn = ''):
         self.settings.New(name='camera_sn',dtype=str,initial=camera_sn,ro=True)
         self.settings.New(name ='model', dtype = str, initial ='N/A',ro = True)
-        self.settings.New(name = 'width', dtype = int, initial = 240, spinbox_step = 4, ro = False)
-        self.settings.New(name = 'height', dtype = int, initial = 180, spinbox_step = 4, ro = False)
-        self.settings.New(name = 'offset_x', dtype = int, initial = 216, spinbox_step = 4, ro = False)
-        self.settings.New(name = 'offset_y', dtype = int, initial = 360, spinbox_step = 4, ro = False)
+        self.settings.New(name = 'width', dtype = int, initial = 360, spinbox_step = 4, ro = False)
+        self.settings.New(name = 'height', dtype = int, initial = 240, spinbox_step = 4, ro = False)
+        self.settings.New(name = 'offset_x', dtype = int, initial = 180, spinbox_step = 4, ro = False)
+        self.settings.New(name = 'offset_y', dtype = int, initial = 300, spinbox_step = 4, ro = False)
         self.settings.New(name = 'auto_exposure', dtype = bool, initial = True, ro = False)
-        self.settings.New(name = 'exposure_time', dtype = float, initial = 99379.72, ro = False)
+        self.settings.New(name = 'exposure_time', dtype = float, initial = 3000, ro = False)
         self.settings.New(name = 'video_mode', dtype = int, initial = 0, ro = False, vmin = 0, vmax = 5)
         
         self.settings.New(name = 'trigger_mode',dtype=bool,initial=False)

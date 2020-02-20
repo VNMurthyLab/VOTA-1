@@ -88,8 +88,8 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 9000, vmin = 0))
-        exp_settings.append(self.settings.New('go', dtype = int, initial = 500)) 
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 2000, vmin = 0))
+        exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
         exp_settings.append(self.settings.New('refract', dtype = int, initial = 500, vmin = 0)) 
         exp_settings.append(self.settings.New('punish', dtype = int, initial = 10000)) 
         
@@ -158,7 +158,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.daq_ai = self.app.hardware['daq_ai']
         self.arduino_sol = self.app.hardware['arduino_sol']
         self.water=self.app.hardware['arduino_water']
-        self.camera=self.app.hardware['thorcam']
+        self.camera=self.app.hardware['lick_cam']
         self.sound=self.app.hardware['sound']
         self.odometer = self.app.hardware['arduino_odometer']
         self.motor = self.app.hardware['arduino_motor']
@@ -343,6 +343,17 @@ class VOTABlockTrainingMeasure(Measurement):
 #                 self.microscope_image.setImage(micro_disp_image)
 #             except Exception as ex:
 #                     print("Error: %s" % ex)
+        #display camera view
+        if not hasattr(self,'camera_disp_queue'):
+            pass
+        elif self.camera_disp_queue.empty():
+            pass
+        else:
+            try:
+                camera_disp_image = self.camera_disp_queue.get()
+                self.camera_image.setImage(camera_disp_image)
+            except Exception as ex:
+                    print("Error: %s" % ex)
                     
 #         if self.settings.movie_on.value():
 #             self.camera_image.setImage(self.camera.read())
@@ -419,14 +430,14 @@ class VOTABlockTrainingMeasure(Measurement):
                                                           shape = self.side_stat.shape,
                                                           dtype = self.side_stat.dtype)
         
-        if self.settings.save_movie.value():
-            file_name_index=0
-            file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
-            while os.path.exists(file_name):
-                file_name_index+=1
-                file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
-            self.camera.settings.file_name.update_value(file_name)
-            self.camera.open_file()
+#         if self.settings.save_movie.value():
+#             file_name_index=0
+#             file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
+#             while os.path.exists(file_name):
+#                 file_name_index+=1
+#                 file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
+#             self.camera.settings.file_name.update_value(file_name)
+#             self.camera.open_file()
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
         '''
@@ -488,18 +499,21 @@ class VOTABlockTrainingMeasure(Measurement):
             self.settings.frame_count.update_value(self.camera_i)
             self.trigger_i = 0
             
-            self.micro_disp_queue = queue.Queue(1000)
-            self.micro_thread = SubMeasurementQThread(self.micro_action)
-            self.interrupt_subthread.connect(self.micro_thread.interrupt)
+#             self.micro_disp_queue = queue.Queue(1000)
+#             self.micro_thread = SubMeasurementQThread(self.micro_action)
+#             self.interrupt_subthread.connect(self.micro_thread.interrupt)
             
+            self.camera_disp_queue = queue.Queue(1000)
+            self.camera_thread = SubMeasurementQThread(self.camera_action)
+            self.interrupt_subthread.connect(self.camera_thread.interrupt)            
             #if False:
-            if self.micro_cam.settings.trigger_mode.value():
-                self.trigger_queue = queue.Queue(1000)
-                self.trigger_thread = SubMeasurementQThread(self.trigger_action)
-                self.interrupt_subthread.connect(self.trigger_thread.interrupt)
-                self.trigger_thread.start()
+#             if self.micro_cam.settings.trigger_mode.value():
+#                 self.trigger_queue = queue.Queue(1000)
+#                 self.trigger_thread = SubMeasurementQThread(self.trigger_action)
+#                 self.interrupt_subthread.connect(self.trigger_thread.interrupt)
+#                 self.trigger_thread.start()
                 
-            if self.settings.record_calcium.value():
+            if self.settings.save_movie.value():
                 save_dir = self.app.settings.save_dir.value()
                 data_path = os.path.join(save_dir,self.app.settings.sample.value())
                 try:
@@ -507,13 +521,15 @@ class VOTABlockTrainingMeasure(Measurement):
                 except OSError:
                     print('directory already exist, writing to existing directory')
     
-                frame_rate = self.micro_cam.settings.frame_rate.value()
+                frame_rate = self.camera.settings.frame_rate.value()
                 self.recorder.settings.path.update_value(data_path)
                 
-                self.recorder.create_file('micro_mov',frame_rate)
+                self.recorder.create_file('camera_mov',frame_rate, width = self.camera.settings.width.value(), height = self.camera.settings.height.value())
             
 #             self.micro_cam.start()
 #             self.micro_thread.start()
+            self.camera.start()
+            self.camera_thread.start()
             
             
             while not self.interrupt_measurement_called:
@@ -673,19 +689,21 @@ class VOTABlockTrainingMeasure(Measurement):
                 # make sure to close the data file
                 self.h5file.close()
             
-            if self.camera.connected.value():
-                self.settings.movie_on.update_value(False)
-                time.sleep(0.1)
-                if self.settings.save_movie.value():
-                    self.camera.close_file() 
+#             if self.camera.connected.value():
+#                 self.settings.movie_on.update_value(False)
+#                 time.sleep(0.1)
+#                 if self.settings.save_movie.value():
+#                     self.camera.close_file() 
                         
 #             self.micro_cam.stop()
-            del self.micro_disp_queue
+#             del self.micro_disp_queue
+            self.camera.stop()
+            del self.camera_disp_queue
             
-            if self.micro_cam.settings.trigger_mode.value():
-                del self.trigger_queue
+#             if self.micro_cam.settings.trigger_mode.value():
+#                 del self.trigger_queue
             
-            if self.settings.record_calcium.value():
+            if self.settings.save_movie.value():
                 self.recorder.close()
 
             self.settings.save_h5.change_readonly(False)
@@ -721,6 +739,21 @@ class VOTABlockTrainingMeasure(Measurement):
 #         except Exception as ex:
 #             print('Error: %s' % ex)
         pass
+    
+    def camera_action(self):
+        try:
+            camera_image = self.camera.read(timeout=1000)
+            camera_data = self.camera._dev.to_numpy(camera_image)
+            if self.camera_i % 10 == 0:
+                camera_disp_data = np.copy(camera_data)
+                self.camera_disp_queue.put(np.fliplr(camera_disp_data.transpose()))
+            if self.settings.save_movie.value():
+                self.recorder.save_frame('camera_mov',camera_image)
+            self.camera_i +=1
+            self.settings.frame_count.update_value(self.camera_i)
+            #print('micro camera:', self.camera_i)
+        except Exception as ex:
+            print('Error: %s' % ex)
             
     def trigger_action(self):
 #         try:
