@@ -13,10 +13,11 @@ import numpy as np
 import time
 import os
 import queue
-from random import randint,random
+from random import randint, random
 from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
 from blaze.expr.reductions import std
 from qtpy import QtCore
+from VOTAScopeMS.detection_models import load_model, get_transform, predict, get_device
 
 class SubMeasurementQThread(MeasurementQThread):
     '''
@@ -81,6 +82,8 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('threshold',dtype=float,initial = 0.6)
         self.settings.New('clean_level',dtype=int, initial = 82)
         self.settings.New('frame_count',dtype=int, initial = 0, ro=True)
+        self.settings.New('cv_lick', dtype=bool, initial=False)
+        self.settings.New('model_path',dtype='file', is_dir=False, initial='D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\trained_model_alex_small.pickle')
         '''
         setting up experimental setting parameters for task
         '''
