@@ -82,8 +82,10 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('threshold',dtype=float,initial = 0.6)
         self.settings.New('clean_level',dtype=int, initial = 82)
         self.settings.New('frame_count',dtype=int, initial = 0, ro=True)
+        self.settings.New('inference_dropped_frame',dtype=int, initial = 0, ro=True)
         self.settings.New('cv_lick', dtype=bool, initial=False)
-        self.settings.New('model_path',dtype='file', is_dir=False, initial='D:\Hao\VOTA\VOTA_Control\VOTAScopeMS\trained_model_alex_small.pickle')
+        self.settings.New('inferred_lick', dtype=int, initial=0, vmin=0, vmax=2, ro=True)
+        self.settings.New('model_path', dtype='file', is_dir=False, initial='D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeMS\\trained_model_alex_small.pickle')
         '''
         setting up experimental setting parameters for task
         '''
@@ -269,8 +271,8 @@ class VOTABlockTrainingMeasure(Measurement):
 
         self.odor_plot[4].setPen('b')
         
-        self.T=np.linspace(0,10,10000)
-        self.k=0
+        self.T = np.linspace(0,10,10000)
+        self.k = 0
         
         self.plot4 = self.aux_graph_layout.addPlot(title = 'Statistics')
         self.stat_plot = []
@@ -283,15 +285,15 @@ class VOTABlockTrainingMeasure(Measurement):
         self.stat_plot[4].setPen('y')
         self.stat_plot[5].setPen('b')
         
-        self.camera_view=pg.ViewBox()
+        self.camera_view = pg.ViewBox()
         self.camera_layout.addItem(self.camera_view)
-        self.camera_image=pg.ImageItem()
+        self.camera_image = pg.ImageItem()
         self.camera_view.addItem(self.camera_image)
         
         self.microscope_view=pg.ViewBox()
         self.microscope_layout.addItem(self.microscope_view)
-        self.microscope_image=pg.ImageItem()
-        self.microscope_histogram=pg.HistogramLUTItem()
+        self.microscope_image = pg.ImageItem()
+        self.microscope_histogram = pg.HistogramLUTItem()
         self.microscope_histogram.setImageItem(self.microscope_image)
         self.microscope_view.addItem(self.microscope_image)
         self.microscope_layout.addItem(self.microscope_histogram)
@@ -527,10 +529,21 @@ class VOTABlockTrainingMeasure(Measurement):
                 frame_rate = self.camera.settings.frame_rate.value()
                 self.recorder.settings.path.update_value(data_path)
                 
-                self.recorder.create_file('camera_mov',frame_rate, width = self.camera.settings.width.value(), height = self.camera.settings.height.value())
+                self.recorder.create_file('camera_mov', frame_rate, width = self.camera.settings.width.value(),
+                                          height = self.camera.settings.height.value())
             
 #             self.micro_cam.start()
 #             self.micro_thread.start()
+            if self.settings.cv_lick.value():
+                self.gpu_device = get_device()
+                self.inference_transform = get_transform(False)
+                self.inference_model = load_model('alexnet', 3, False, self.gpu_device,
+                                      self.settings.model_path.value())
+                self.inference_queue = queue.Queue(1)
+                self.inference_thread = SubMeasurementQThread(self.inference_action)
+                self.interrupt_subthread.connect(self.inference_thread.interrupt)
+                self.inference_thread.start()
+
             self.camera.start()
             self.camera_thread.start()
             
@@ -564,23 +577,46 @@ class VOTABlockTrainingMeasure(Measurement):
                     
                 lick_0 = (self.buffer[i,1]<3)
                 lick_1 = (self.buffer[i,2]<3)
-                self.buffer[i,1]=lick_0 #convert lick sensor into 0(no lick) and 1(lick)
-                self.buffer[i,2]=lick_1
-                
-                self.lick_ind[0].update_value(lick_0)
-                self.lick_ind[1].update_value(lick_1)
+                self.buffer[i, 1] = lick_0 #convert lick sensor into 0(no lick) and 1(lick)
+                self.buffer[i, 2] = lick_1
+
                 
                 '''
                 get a readout for lick
                 '''
-                if (lick_0 and lick_1):
-                    lick = 3
-                elif lick_0:
-                    lick = 1
-                elif lick_1:
-                    lick = 2
+                if self.settings.cv_lick:
+                    # lick = self.settings.inferred_lick.value()
+                    self.buffer[i, 3] = self.settings.inferred_lick.value()
+                    # if lick == 1:
+                    #     self.lick_ind[0].update_value(True)
+                    #     self.lick_ind[1].update_value(False)
+                    # elif lick == 2:
+                    #     self.lick_ind[0].update_value(False)
+                    #     self.lick_ind[1].update_value(True)
+                    # else:
+                    #     self.lick_ind[0].update_value(False)
+                    #     self.lick_ind[1].update_value(False)
+                    self.lick_ind[0].update_value(lick_0)
+                    self.lick_ind[1].update_value(lick_1)
+                    if lick_0 and lick_1:
+                        lick = 3
+                    elif lick_0:
+                        lick = 1
+                    elif lick_1:
+                        lick = 2
+                    else:
+                        lick = 0
                 else:
-                    lick = 0
+                    self.lick_ind[0].update_value(lick_0)
+                    self.lick_ind[1].update_value(lick_1)
+                    if lick_0 and lick_1:
+                        lick = 3
+                    elif lick_0:
+                        lick = 1
+                    elif lick_1:
+                        lick = 2
+                    else:
+                        lick = 0
                 
                 '''
                 step through task
@@ -604,7 +640,7 @@ class VOTABlockTrainingMeasure(Measurement):
                             print(ex)
 
                 else:
-                    self.arduino_sol.load([0,0,0,0,self.settings.clean_level.value(),0,0,0])
+                    self.arduino_sol.load([0, 0, 0, 0, self.settings.clean_level.value(), 0, 0, 0])
                     pass
                 
                 '''
@@ -702,7 +738,7 @@ class VOTABlockTrainingMeasure(Measurement):
 #             del self.micro_disp_queue
             self.camera.stop()
             del self.camera_disp_queue
-            
+
 #             if self.micro_cam.settings.trigger_mode.value():
 #                 del self.trigger_queue
             
@@ -750,11 +786,25 @@ class VOTABlockTrainingMeasure(Measurement):
             if self.camera_i % 10 == 0:
                 camera_disp_data = np.copy(camera_data)
                 self.camera_disp_queue.put(np.fliplr(camera_disp_data.transpose()))
+            if self.settings.cv_lick.value():
+                try:
+                    self.inference_queue.put_nowait(camera_data)
+                except queue.Full:
+                    dropped_frame = self.settings.inference_dropped_frame.value()
+                    self.settings.inference_dropped_frame.update_value(dropped_frame+1)
             if self.settings.save_movie.value():
                 self.recorder.save_frame('camera_mov',camera_image)
             self.camera_i +=1
             self.settings.frame_count.update_value(self.camera_i)
             #print('micro camera:', self.camera_i)
+        except Exception as ex:
+            print('Error: %s' % ex)
+
+    def inference_action(self):
+        try:
+            frame = self.inference_queue.get()
+            inferred_lick = predict(self.inference_model, frame, self.inference_transform, self.gpu_device)
+            self.settings.inferred_lick.update_value(inferred_lick)
         except Exception as ex:
             print('Error: %s' % ex)
             

@@ -260,7 +260,8 @@ def predict(model, array, transform, device):
     '''
     take in an array of (224,224,3) and generate a lick prediction.
     '''
-    image_t = transform(Image.fromarray(array.astype(np.uint8)))
+    image= Image.fromarray(array.astype(np.uint8)).convert('RGB')
+    image_t = transform(image)
     batch_t = torch.unsqueeze(image_t, 0)
     out = model(batch_t.to(device))
     answer = np.argmax(out.cpu().detach().numpy())
