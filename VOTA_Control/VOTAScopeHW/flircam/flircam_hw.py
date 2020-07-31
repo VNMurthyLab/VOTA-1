@@ -27,7 +27,7 @@ class FLIRCamHW(HardwareComponent):
         
         self.settings.New(name = 'trigger_mode',dtype=bool,initial=False)
         self.settings.New(name = 'hardware_trigger',dtype=bool,initial=False)
-        self.settings.New(name = 'frame_rate', dtype = float, initial = 200, ro = False, vmin = 0, vmax = 500)
+        self.settings.New(name = 'frame_rate', dtype = float, initial = 180, ro = False, vmin = 0, vmax = 500)
                 
     def connect(self):
         #connect to the camera device

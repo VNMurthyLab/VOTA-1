@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import QDoubleSpinBox, QCheckBox
 from blaze.expr.reductions import std
 from qtpy import QtCore
 from VOTAScopeMS.detection_models import load_model, get_transform, predict, get_device
+import multiprocessing
 
 class SubMeasurementQThread(MeasurementQThread):
     '''
@@ -80,7 +81,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('free_drop', dtype = bool, initial = False)
         self.settings.New('sniff_lock', dtype = bool, initial = False)
         self.settings.New('threshold',dtype=float,initial = 0.6)
-        self.settings.New('clean_level',dtype=int, initial = 82)
+        self.settings.New('clean_level',dtype=int, initial = 88)
         self.settings.New('frame_count',dtype=int, initial = 0, ro=True)
         self.settings.New('inference_dropped_frame',dtype=int, initial = 0, ro=True)
         self.settings.New('cv_lick', dtype=bool, initial=False)
@@ -93,9 +94,9 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
-        exp_settings.append(self.settings.New('delay', dtype = int, initial = 2000, vmin = 0))
-        exp_settings.append(self.settings.New('go', dtype = int, initial = 2500)) 
-        exp_settings.append(self.settings.New('refract', dtype = int, initial = 500, vmin = 0)) 
+        exp_settings.append(self.settings.New('delay', dtype = int, initial = 1200, vmin = 0))
+        exp_settings.append(self.settings.New('go', dtype = int, initial = 1500))
+        exp_settings.append(self.settings.New('refract', dtype = int, initial = 3500, vmin = 0))
         exp_settings.append(self.settings.New('punish', dtype = int, initial = 10000)) 
         
         
@@ -104,8 +105,8 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level1', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 50))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 500))
+        exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 20))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 60))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1000))
         exp_settings.append(self.settings.New('kernel1', dtype = int, initial = 0,vmin=0,vmax=10000))
         exp_settings.append(self.settings.New('kernel2', dtype = int, initial = 250,vmin=0,vmax=10000))
@@ -434,15 +435,7 @@ class VOTABlockTrainingMeasure(Measurement):
             self.side_stat_h5 = self.h5_group.create_dataset(name  = 'side_stat', 
                                                           shape = self.side_stat.shape,
                                                           dtype = self.side_stat.dtype)
-        
-#         if self.settings.save_movie.value():
-#             file_name_index=0
-#             file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
-#             while os.path.exists(file_name):
-#                 file_name_index+=1
-#                 file_name=os.path.join(self.app.settings.save_dir.value(),self.app.settings.sample.value())+'_'+str(file_name_index)+'.avi'
-#             self.camera.settings.file_name.update_value(file_name)
-#             self.camera.open_file()
+
         # We use a try/finally block, so that if anything goes wrong during a measurement,
         # the finally block can clean things up, e.g. close the data file object.
         '''
@@ -491,7 +484,7 @@ class VOTABlockTrainingMeasure(Measurement):
             '''
             Start DAQ, Default at 1kHz
             '''
-            self.daq_ai.start()
+
             
             # Will run forever until interrupt is called.
 
@@ -502,12 +495,22 @@ class VOTABlockTrainingMeasure(Measurement):
             '''
             self.camera_i = 0
             self.settings.frame_count.update_value(self.camera_i)
+            self.settings.inference_dropped_frame.update_value(0)
             self.trigger_i = 0
             
 #             self.micro_disp_queue = queue.Queue(1000)
 #             self.micro_thread = SubMeasurementQThread(self.micro_action)
 #             self.interrupt_subthread.connect(self.micro_thread.interrupt)
-            
+            if self.settings.cv_lick.value():
+                self.gpu_device = get_device()
+                self.inference_transform = get_transform(False)
+                self.inference_model = load_model('alexnet', 3, False, self.gpu_device,
+                                      self.settings.model_path.value())
+                self.inference_queue = queue.Queue(1)
+                self.inference_thread = SubMeasurementQThread(self.inference_action)
+                self.interrupt_subthread.connect(self.inference_thread.interrupt)
+                self.inference_thread.start()
+
             self.camera_disp_queue = queue.Queue(1000)
             self.camera_thread = SubMeasurementQThread(self.camera_action)
             self.interrupt_subthread.connect(self.camera_thread.interrupt)            
@@ -534,18 +537,12 @@ class VOTABlockTrainingMeasure(Measurement):
             
 #             self.micro_cam.start()
 #             self.micro_thread.start()
-            if self.settings.cv_lick.value():
-                self.gpu_device = get_device()
-                self.inference_transform = get_transform(False)
-                self.inference_model = load_model('alexnet', 3, False, self.gpu_device,
-                                      self.settings.model_path.value())
-                self.inference_queue = queue.Queue(1)
-                self.inference_thread = SubMeasurementQThread(self.inference_action)
-                self.interrupt_subthread.connect(self.inference_thread.interrupt)
-                self.inference_thread.start()
 
             self.camera.start()
             self.camera_thread.start()
+
+
+            self.daq_ai.start()
             
             
             while not self.interrupt_measurement_called:
@@ -570,7 +567,7 @@ class VOTABlockTrainingMeasure(Measurement):
                 self.buffer[i,0:num_of_chan] = self.daq_ai.read_data()
                 #start image capture if trigger is on
                 
-                #if False:
+                # trigger microscope camera for calcium recording
                 if self.micro_cam.settings.trigger_mode.value():
                     if i % 100 == 0:
                         self.trigger_queue.put(10)
@@ -584,28 +581,18 @@ class VOTABlockTrainingMeasure(Measurement):
                 '''
                 get a readout for lick
                 '''
-                if self.settings.cv_lick:
-                    # lick = self.settings.inferred_lick.value()
+                if self.settings.cv_lick.value():
+                    lick = self.settings.inferred_lick.value()
                     self.buffer[i, 3] = self.settings.inferred_lick.value()
-                    # if lick == 1:
-                    #     self.lick_ind[0].update_value(True)
-                    #     self.lick_ind[1].update_value(False)
-                    # elif lick == 2:
-                    #     self.lick_ind[0].update_value(False)
-                    #     self.lick_ind[1].update_value(True)
-                    # else:
-                    #     self.lick_ind[0].update_value(False)
-                    #     self.lick_ind[1].update_value(False)
-                    self.lick_ind[0].update_value(lick_0)
-                    self.lick_ind[1].update_value(lick_1)
-                    if lick_0 and lick_1:
-                        lick = 3
-                    elif lick_0:
-                        lick = 1
-                    elif lick_1:
-                        lick = 2
+                    if lick == 1:
+                        self.lick_ind[0].update_value(True)
+                        self.lick_ind[1].update_value(False)
+                    elif lick == 2:
+                        self.lick_ind[0].update_value(False)
+                        self.lick_ind[1].update_value(True)
                     else:
-                        lick = 0
+                        self.lick_ind[0].update_value(False)
+                        self.lick_ind[1].update_value(False)
                 else:
                     self.lick_ind[0].update_value(lick_0)
                     self.lick_ind[1].update_value(lick_1)
@@ -649,13 +636,7 @@ class VOTABlockTrainingMeasure(Measurement):
                 
                         
                         
-                '''     
-                Read and save Position and Speed at 25Hz(default) (3:position 4:speed)
-                '''
-#                if i%20 == 0:
-#                    self.odometer.read()
-#                    self.buffer[j:(j+20),num_of_chan+10] = self.odometer.settings.x.value()
-#                    self.buffer[j:(j+20),num_of_chan + 11] = self.odometer.settings.y.value()
+
 
                 '''
                 Read Camera Frame Count
@@ -668,7 +649,6 @@ class VOTABlockTrainingMeasure(Measurement):
                 '''
                 write odor value to display (7:clean air 8:odor1 9:odor2 10:odor3)
                 '''
-                    #to be implemented
                     
                
                 '''
@@ -784,8 +764,7 @@ class VOTABlockTrainingMeasure(Measurement):
             camera_image = self.camera.read(timeout=1000)
             camera_data = self.camera._dev.to_numpy(camera_image)
             if self.camera_i % 10 == 0:
-                camera_disp_data = np.copy(camera_data)
-                self.camera_disp_queue.put(np.fliplr(camera_disp_data.transpose()))
+                self.camera_disp_queue.put(np.fliplr(camera_data.transpose()))
             if self.settings.cv_lick.value():
                 try:
                     self.inference_queue.put_nowait(camera_data)

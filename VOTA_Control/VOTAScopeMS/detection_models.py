@@ -260,11 +260,16 @@ def predict(model, array, transform, device):
     '''
     take in an array of (224,224,3) and generate a lick prediction.
     '''
+    #time1 = time.time()*1000
     image= Image.fromarray(array.astype(np.uint8)).convert('RGB')
     image_t = transform(image)
     batch_t = torch.unsqueeze(image_t, 0)
+    #time2 = time.time()*1000
     out = model(batch_t.to(device))
-    answer = np.argmax(out.cpu().detach().numpy())
+    #time3 = time.time()*1000
+    answer = out.argmax()
+    #time4 = time.time()*1000
+    #print(time2-time1, time3-time2, time4-time3)
     return answer
 
 
