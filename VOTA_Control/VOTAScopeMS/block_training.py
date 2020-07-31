@@ -76,6 +76,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.settings.New('save_movie', dtype=bool, initial=False,ro=False)
         self.settings.New('movie_on', dtype=bool, initial=False,ro=True)
         self.settings.New('random',dtype=bool, initial=False, ro= False)
+        self.settings.New('high_chance',dtype=float,initial=0.5,vmin=0,vmax=1)
         self.settings.New('audio_on',dtype=bool,initial = False,ro = False)
         self.settings.New('lick_training',dtype=bool,initial=False)
         self.settings.New('free_drop', dtype = bool, initial = False)
@@ -94,6 +95,7 @@ class VOTABlockTrainingMeasure(Measurement):
         
         
         exp_settings.append(self.settings.New('block', dtype = int, initial = 5))
+        exp_settings.append(self.settings.New('forced_side', dtype=int, initial=0,vmin=0,vmax=2))
         exp_settings.append(self.settings.New('delay', dtype = int, initial = 1200, vmin = 0))
         exp_settings.append(self.settings.New('go', dtype = int, initial = 1500))
         exp_settings.append(self.settings.New('refract', dtype = int, initial = 3500, vmin = 0))
@@ -452,6 +454,8 @@ class VOTABlockTrainingMeasure(Measurement):
                                 random_lq = self.settings.random,
                                 state_lqs = self.state_ind,
                                 reward_lqs = self.reward_ind,
+                                high_chance = self.settings.high_chance,
+                                forced_side = self.settings.forced_side,
                                 block = self.settings.block.value(),
                                 delay = self.settings.delay.value(),
                                 go = self.settings.go.value(),
@@ -537,10 +541,11 @@ class VOTABlockTrainingMeasure(Measurement):
             
 #             self.micro_cam.start()
 #             self.micro_thread.start()
-
-            self.camera.start()
-            self.camera_thread.start()
-
+            try:
+                self.camera.start()
+                self.camera_thread.start()
+            except:
+                pass
 
             self.daq_ai.start()
             
@@ -716,8 +721,11 @@ class VOTABlockTrainingMeasure(Measurement):
                         
 #             self.micro_cam.stop()
 #             del self.micro_disp_queue
-            self.camera.stop()
-            del self.camera_disp_queue
+            try:
+                self.camera.stop()
+                del self.camera_disp_queue
+            except:
+                pass
 
 #             if self.micro_cam.settings.trigger_mode.value():
 #                 del self.trigger_queue
@@ -1019,7 +1027,7 @@ class TrainingTask(object):
     '''
     
     def __init__(self, audio_on, water_hw, odor_gen, sound_hw, motor_hw, stat_rec, 
-                 side_rec, random_lq, state_lqs, reward_lqs, block = 3, delay = 2000, 
+                 side_rec, random_lq, state_lqs, reward_lqs, high_chance, forced_side, block = 3, delay = 2000,
                  go = 5000, refract = 2000, punish = 5000, lick_training = False, 
                  free_drop = False, sniff_lock = False):
         '''
@@ -1047,6 +1055,8 @@ class TrainingTask(object):
         self.lick_training = lick_training
         self.free_drop = free_drop
         self.sniff_lock = sniff_lock
+        self.high_chance = high_chance
+        self.forced_side = forced_side
         if self.sniff_lock:
             self.odor_gen.T = 100
             self.odor_gen.reset()
@@ -1086,12 +1096,15 @@ class TrainingTask(object):
             '''
             switch side for if the number of trials reach the block number
             '''
-            if self.random_lq.value():
+
+            if self.forced_side.value()>0:
+                self.side = self.forced_side.value()
+            elif self.random_lq.value():
                 dice = np.random.rand()
-                if dice<0.5:
-                    self.side = 2
-                else:
+                if dice < self.high_chance.value():
                     self.side = 1
+                else:
+                    self.side = 2
             else:
                 if self.trial >= self.block:
                     self.side = 3 - self.side

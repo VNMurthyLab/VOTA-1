@@ -191,7 +191,7 @@ background-color: rgb(148, 148, 148);</string>
    <item row="0" column="1" rowspan="2" colspan="2">
     <widget class="QGroupBox" name="control_1groupBox">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Ignored">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -210,6 +210,12 @@ background-color: rgb(148, 148, 148);</string>
        <widget class="QDoubleSpinBox" name="block_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
         </property>
         <property name="suffix">
          <string/>
@@ -233,13 +239,13 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="2">
-       <widget class="QDoubleSpinBox" name="level2_doubleSpinBox">
+      <item row="8" column="1">
+       <widget class="QDoubleSpinBox" name="level1_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color:rgb(255, 255, 0)</string>
         </property>
         <property name="suffix">
          <string>%</string>
@@ -259,29 +265,19 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
-       <widget class="QDoubleSpinBox" name="level1_doubleSpinBox">
+      <item row="8" column="2">
+       <widget class="QDoubleSpinBox" name="level2_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
         <property name="styleSheet">
-         <string notr="true">color:rgb(255, 255, 0)</string>
+         <string notr="true">color: rgb(0, 255, 0);</string>
         </property>
         <property name="suffix">
          <string>%</string>
         </property>
         <property name="decimals">
          <number>0</number>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="styleSheet">
-         <string>color: rgb(0, 255, 0);</string>
-        </property>
-        <property name="text">
-         <string>go</string>
         </property>
        </widget>
       </item>
@@ -300,6 +296,12 @@ background-color: rgb(148, 148, 148);</string>
         <property name="enabled">
          <bool>true</bool>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
         <property name="styleSheet">
          <string notr="true">color:rgb(255, 255, 0)</string>
         </property>
@@ -311,19 +313,13 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="9" column="2">
-       <widget class="QDoubleSpinBox" name="Tpulse2_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string>color: rgb(0, 255, 0);</string>
         </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
+        <property name="text">
+         <string>go</string>
         </property>
        </widget>
       </item>
@@ -343,16 +339,44 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="7" column="2">
-       <widget class="QDoubleSpinBox" name="channel2_doubleSpinBox">
+      <item row="9" column="2">
+       <widget class="QDoubleSpinBox" name="Tpulse2_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
         </property>
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 255, 0);</string>
         </property>
         <property name="suffix">
-         <string/>
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" colspan="2">
+       <widget class="QDoubleSpinBox" name="go_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(0, 255, 0);</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
         </property>
         <property name="decimals">
          <number>0</number>
@@ -375,16 +399,22 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="1" colspan="2">
-       <widget class="QDoubleSpinBox" name="go_doubleSpinBox">
+      <item row="7" column="2">
+       <widget class="QDoubleSpinBox" name="channel2_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
         </property>
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 255, 0);</string>
         </property>
         <property name="suffix">
-         <string>ms</string>
+         <string/>
         </property>
         <property name="decimals">
          <number>0</number>
@@ -395,6 +425,12 @@ background-color: rgb(148, 148, 148);</string>
        <widget class="QDoubleSpinBox" name="interval2_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
         </property>
         <property name="styleSheet">
          <string notr="true">color: rgb(0, 255, 0);</string>
@@ -412,8 +448,36 @@ background-color: rgb(148, 148, 148);</string>
         <property name="enabled">
          <bool>true</bool>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
         <property name="styleSheet">
          <string notr="true">color: rgb(255, 85, 0);</string>
+        </property>
+        <property name="suffix">
+         <string>ms</string>
+        </property>
+        <property name="decimals">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QDoubleSpinBox" name="interval1_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color:rgb(255, 255, 0)</string>
         </property>
         <property name="suffix">
          <string>ms</string>
@@ -427,6 +491,12 @@ background-color: rgb(148, 148, 148);</string>
        <widget class="QDoubleSpinBox" name="channel1_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
         </property>
         <property name="styleSheet">
          <string notr="true">color:rgb(255, 255, 0)</string>
@@ -446,19 +516,10 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
-       <widget class="QDoubleSpinBox" name="interval1_doubleSpinBox">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color:rgb(255, 255, 0)</string>
-        </property>
-        <property name="suffix">
-         <string>ms</string>
-        </property>
-        <property name="decimals">
-         <number>0</number>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Tpulse</string>
         </property>
        </widget>
       </item>
@@ -466,13 +527,6 @@ background-color: rgb(148, 148, 148);</string>
        <widget class="QLabel" name="label_6">
         <property name="text">
          <string>level</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Tpulse</string>
         </property>
        </widget>
       </item>
@@ -496,13 +550,19 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
-       <widget class="QDoubleSpinBox" name="kernel1_doubleSpinBox">
+      <item row="11" column="2">
+       <widget class="QDoubleSpinBox" name="kernel2_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
         <property name="styleSheet">
-         <string notr="true">color:rgb(255, 255, 0)</string>
+         <string notr="true">color: rgb(0, 255, 0);</string>
         </property>
         <property name="suffix">
          <string>ms</string>
@@ -512,13 +572,19 @@ background-color: rgb(148, 148, 148);</string>
         </property>
        </widget>
       </item>
-      <item row="11" column="2">
-       <widget class="QDoubleSpinBox" name="kernel2_doubleSpinBox">
+      <item row="11" column="1">
+       <widget class="QDoubleSpinBox" name="kernel1_doubleSpinBox">
         <property name="enabled">
          <bool>true</bool>
         </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color:rgb(255, 255, 0)</string>
         </property>
         <property name="suffix">
          <string>ms</string>
@@ -543,6 +609,28 @@ background-color: rgb(148, 148, 148);</string>
         </property>
         <property name="text">
          <string>Set Kernel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QDoubleSpinBox" name="forced_side_doubleSpinBox">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>12</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 255);</string>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="decimals">
+         <number>0</number>
         </property>
        </widget>
       </item>
