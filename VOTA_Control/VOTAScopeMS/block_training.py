@@ -108,7 +108,7 @@ class VOTABlockTrainingMeasure(Measurement):
         exp_settings.append(self.settings.New('level2', dtype = int, initial = 100, vmin = 0, vmax = 100))
         exp_settings.append(self.settings.New('Tpulse1', dtype = int, initial = 50))
         exp_settings.append(self.settings.New('Tpulse2', dtype = int, initial = 20))
-        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 60))
+        exp_settings.append(self.settings.New('interval1', dtype = int, initial = 120))
         exp_settings.append(self.settings.New('interval2', dtype = int, initial = 1000))
         exp_settings.append(self.settings.New('kernel1', dtype = int, initial = 0,vmin=0,vmax=10000))
         exp_settings.append(self.settings.New('kernel2', dtype = int, initial = 250,vmin=0,vmax=10000))
@@ -275,6 +275,9 @@ class VOTABlockTrainingMeasure(Measurement):
         self.odor_plot[4].setPen('b')
         
         self.T = np.linspace(0,10,10000)
+        self.airflow_spacing = 100
+        self.airflow_grid = np.arange(self.airflow_spacing) - self.airflow_spacing - 1
+        self.T_airflow = np.linspace(0,10,10000//self.airflow_spacing)
         self.k = 0
         
         self.plot4 = self.aux_graph_layout.addPlot(title = 'Statistics')
@@ -320,7 +323,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.lick_plot_0.setData(self.k+self.T,self.buffer[:,1]) 
         self.lick_plot_1.setData(self.k+self.T,self.buffer[:,2]) 
         self.breathing_plot.setData(self.k+self.T,self.buffer[:,0]) 
-        self.airflow_plot.setData(self.k+self.T,self.buffer[:,3]) 
+        self.airflow_plot.setData(self.k+self.T_airflow,self.vacuum_flow[:])
         
         for i in range(8):
             self.odor_plot[i].setData(self.k + self.T, self.buffer[:,i+6])
@@ -394,6 +397,7 @@ class VOTABlockTrainingMeasure(Measurement):
         self.ntrials = 1
         num_of_chan=self.daq_ai.settings.num_of_chan.value()
         self.buffer = np.zeros((10000,num_of_chan+12), dtype=float)
+        self.vacuum_flow = np.zeros(self.T_airflow.size,)
         self.stat = np.zeros((10,2000), dtype = float)
         self.side_stat = np.zeros((11,2000), dtype = float)
         statrec = StatRec()
@@ -582,33 +586,41 @@ class VOTABlockTrainingMeasure(Measurement):
                 self.buffer[i, 1] = lick_0 #convert lick sensor into 0(no lick) and 1(lick)
                 self.buffer[i, 2] = lick_1
 
+                '''
+                Read Vaccuum Flow
+                '''
+                if i % self.airflow_spacing == 0:
+                    current_airflow_tick = i // self.airflow_spacing
+                    current_airflow_grid = self.airflow_grid + (i//self.airflow_spacing) * self.airflow_spacing
+                    self.vacuum_flow[current_airflow_tick] = self.buffer[current_airflow_grid,3].mean()
+
                 
                 '''
                 get a readout for lick
                 '''
-                if self.settings.cv_lick.value():
-                    lick = self.settings.inferred_lick.value()
-                    self.buffer[i, 3] = self.settings.inferred_lick.value()
-                    if lick == 1:
-                        self.lick_ind[0].update_value(True)
-                        self.lick_ind[1].update_value(False)
-                    elif lick == 2:
-                        self.lick_ind[0].update_value(False)
-                        self.lick_ind[1].update_value(True)
-                    else:
-                        self.lick_ind[0].update_value(False)
-                        self.lick_ind[1].update_value(False)
-                else:
-                    self.lick_ind[0].update_value(lick_0)
-                    self.lick_ind[1].update_value(lick_1)
-                    if lick_0 and lick_1:
-                        lick = 3
-                    elif lick_0:
-                        lick = 1
-                    elif lick_1:
-                        lick = 2
-                    else:
-                        lick = 0
+                # if self.settings.cv_lick.value():
+                #     lick = self.settings.inferred_lick.value()
+                #     self.buffer[i, 3] = self.settings.inferred_lick.value()
+                #     if lick == 1:
+                #         self.lick_ind[0].update_value(True)
+                #         self.lick_ind[1].update_value(False)
+                #     elif lick == 2:
+                #         self.lick_ind[0].update_value(False)
+                #         self.lick_ind[1].update_value(True)
+                #     else:
+                #         self.lick_ind[0].update_value(False)
+                #         self.lick_ind[1].update_value(False)
+                # else:
+                #     self.lick_ind[0].update_value(lick_0)
+                #     self.lick_ind[1].update_value(lick_1)
+                #     if lick_0 and lick_1:
+                #         lick = 3
+                #     elif lick_0:
+                #         lick = 1
+                #     elif lick_1:
+                #         lick = 2
+                #     else:
+                #         lick = 0
                 
                 '''
                 step through task

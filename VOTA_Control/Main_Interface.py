@@ -21,6 +21,8 @@ class VOTAScopeApp(BaseMicroscopeApp):
         print("Create Hardware objects")
         from VOTAScopeHW.daq_ai.daq_ai_hw import DAQaiHW
         self.add_hardware(DAQaiHW(self))
+        from VOTAScopeHW.daq_ao.daq_ao_hw import DAQaoHW
+        self.add_hardware(DAQaoHW(self))
         from VOTAScopeHW.arduino_sol_8.arduino_sol_hw import ArduinoSolHW
         self.add_hardware(ArduinoSolHW(self))
 #         from VOTAScopeHW.odor_gen.odor_gen_hw import OdorGenHW

@@ -15,7 +15,7 @@ class ArduinoWaterHW(HardwareComponent):
     
     name='arduino_water'
 
-    def setup(self,port='COM6',baud_rate=250000):
+    def setup(self,port='COM4',baud_rate=250000):
         '''
         add settings for analog input event
         '''
