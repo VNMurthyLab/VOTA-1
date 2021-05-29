@@ -19,7 +19,7 @@ class ArduinoSolHW(HardwareComponent):
     
     name='arduino_sol'
 
-    def setup(self,port='COM7',baud_rate=500000,fname='D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeHW\\arduino_sol_8\\calib.h5'):
+    def setup(self,port='COM5',baud_rate=500000,fname='D:\\Hao\\VOTA\\VOTA_Control\\VOTAScopeHW\\arduino_sol_8\\calib.h5'):
         '''
         add settings for analog input event
         '''
